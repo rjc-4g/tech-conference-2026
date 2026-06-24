@@ -70,6 +70,26 @@
 
 将来的に永続化が必要になった場合は、SQLite + Prismaを候補とする。ただし、追加ライブラリが必要になるため、導入前に理由を説明して承認を得る。
 
+### Docker
+
+ローカル開発環境での接続確認を安定させるため、Docker Composeでフロントエンドとバックエンドを分離起動できる構成を追加する。
+
+- `backend` サービス
+  - `backend/Dockerfile`
+  - 公開ポート: `3001`
+  - 実行コマンド: `npm run dev -w backend`
+- `frontend` サービス
+  - `frontend/Dockerfile`
+  - 公開ポート: `5173`
+  - 実行コマンド: `npm run dev -w frontend -- --host 0.0.0.0`
+  - API接続先: `TODO_API_TARGET=http://backend:3001`
+
+理由:
+
+- ホスト環境のプロセス起動・ポート確認権限に左右されにくくする。
+- フロントエンドとバックエンドの分離構成を保ったまま、同一ネットワーク内で `/api` proxy を解決できる。
+- DBを導入せず、既存のインメモリ実装をそのまま検証できる。
+
 ## 初期セットアップ予定コマンド
 
 実行前にユーザ確認を行うこと。
@@ -120,5 +140,18 @@ npm run build
 
 | 領域 | ライブラリ | バージョン | 確認元 |
 | --- | --- | --- | --- |
-| frontend | 未インストール | 未定 | 未定 |
-| backend | 未インストール | 未定 | 未定 |
+| frontend | React | ^19.2.7 | `frontend/package.json` |
+| frontend | React DOM | ^19.2.7 | `frontend/package.json` |
+| frontend | Vite | ^8.1.0 | `frontend/package.json` |
+| frontend | TypeScript | ~6.0.2 | `frontend/package.json` |
+| frontend | Vitest | ^4.1.9 | `frontend/package.json` |
+| frontend | Testing Library React | ^16.3.2 | `frontend/package.json` |
+| frontend | Testing Library jest-dom | ^6.9.1 | `frontend/package.json` |
+| frontend | Testing Library user-event | ^14.6.1 | `frontend/package.json` |
+| frontend | Playwright | ^1.61.1 | `frontend/package.json` |
+| backend | Express | ^5.2.1 | `backend/package.json` |
+| backend | cors | ^2.8.6 | `backend/package.json` |
+| backend | TypeScript | ^6.0.3 | `backend/package.json` |
+| backend | tsx | ^4.22.4 | `backend/package.json` |
+| backend | Vitest | ^4.1.9 | `backend/package.json` |
+| backend | Supertest | ^7.2.2 | `backend/package.json` |
