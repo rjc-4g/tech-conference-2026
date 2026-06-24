@@ -1,0 +1,26 @@
+{
+    "name": "todo-frontend",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "@vitejs/plugin-react": "^4.0.0",
+        "react-modal": "^3.16.1",
+        "axios": "^1.4.0"
+    },
+    "devDependencies": {
+        "@types/react": "^18.0.28",
+        "@types/react-dom": "^18.0.11",
+        "autoprefixer": "^10.4.14",
+        "postcss": "^8.4.21",
+        "tailwindcss": "^3.4.7",
+        "typescript": "^4.9.5",
+        "vite": "^5.1.0"
+    }
+}

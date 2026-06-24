@@ -1,0 +1,17 @@
+{
+    "name": "todo-backend",
+    "version": "0.0.1",
+    "private": true,
+    "main": "src/index.js",
+    "scripts": {
+        "start": "node src/index.js",
+        "migrate:remove-auto-priority": "node scripts/migrate_remove_auto_priority.js",
+        "migrate:add-is-today": "node scripts/migrate_add_is_today.js"
+    },
+    "dependencies": {
+        "better-sqlite3": "^8.2.0",
+        "fastify": "^4.23.0",
+        "@fastify/cors": "^9.0.0",
+        "uuid": "^9.0.0"
+    }
+}
