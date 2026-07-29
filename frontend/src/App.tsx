@@ -11,7 +11,10 @@ type Task = {
     status: string
     created_at: string
     progress: number
+    scheduled_at?: string | null
     due_date?: string | null
+    category_id?: string | null
+    parent_id?: string | null
     order_num?: number
     is_today?: number | boolean
 }
@@ -303,6 +306,13 @@ export default function App() {
         return categories.find(c => c.id === catId) || null
     }
 
+    function formatScheduledAt(v?: string | null) {
+        if (!v) return '未設定'
+        const d = new Date(v)
+        if (Number.isNaN(d.getTime())) return '未設定'
+        return d.toLocaleString()
+    }
+
     return (
         <div className="p-6 max-w-3xl mx-auto">
             <div className="flex items-center justify-between mb-4">
@@ -364,6 +374,7 @@ export default function App() {
                                                 )}
                                             </div>
                                             <div className="text-xs text-gray-500">{node.description}</div>
+                                            <div className="text-lg font-semibold text-sky-700">実行予定日時: {formatScheduledAt(node.scheduled_at)}</div>
                                             {node.due_date && <div className="text-xs text-gray-700">期限: {new Date(node.due_date).toLocaleString()}</div>}
                                             {isExpired(node) && !isCompleted(node) && <div className="text-sm font-bold text-red-700">期限切れです</div>}
                                             <div className="w-40 mt-2 flex items-center gap-2">
@@ -376,16 +387,16 @@ export default function App() {
                                         <div className="flex items-center">
                                             <button className="mr-2 px-2 py-1 bg-gray-200 rounded" onClick={() => reorderSwap(flat, idx, -1)}>▲</button>
                                             <button className="mr-2 px-2 py-1 bg-gray-200 rounded" onClick={() => reorderSwap(flat, idx, 1)}>▼</button>
-                                            <button type="button" className="mr-2 px-2 py-1 bg-purple-500 text-white rounded" onClick={() => unmarkTodayWithChildren(node.id)}>今日やらない</button>
-                                            <button className="mr-2 px-2 py-1 bg-green-600 text-white rounded" onClick={() => openNewChild(node.id)}>子タスク新規</button>
-                                            <button className="mr-2 px-2 py-1 bg-blue-500 text-white rounded" onClick={() => openEdit(node)}>編集</button>
+                                            <button type="button" className="mr-2 px-2 py-1 bg-purple-500 text-white rounded whitespace-nowrap" onClick={() => unmarkTodayWithChildren(node.id)}>今日やらない</button>
+                                            <button className="mr-2 px-2 py-1 bg-green-600 text-white rounded whitespace-nowrap" onClick={() => openNewChild(node.id)}>子タスク新規</button>
+                                            <button className="mr-2 px-2 py-1 bg-blue-500 text-white rounded whitespace-nowrap" onClick={() => openEdit(node)}>編集</button>
                                             {!isCompleted(node) && (
-                                                <button className="mr-2 px-2 py-1 bg-yellow-500 text-white rounded" onClick={() => markComplete(node.id)}>完了</button>
+                                                <button className="mr-2 px-2 py-1 bg-yellow-500 text-white rounded whitespace-nowrap" onClick={() => markComplete(node.id)}>完了</button>
                                             )}
-                                            <button className="px-2 py-1 bg-red-500 text-white rounded" onClick={() => handleDelete(node.id)}>削除</button>
+                                            <button className="px-2 py-1 bg-red-500 text-white rounded whitespace-nowrap" onClick={() => handleDelete(node.id)}>削除</button>
                                         </div>
                                     </div>
-                                            {map[node.id] && map[node.id].length > 0 && (
+                                    {map[node.id] && map[node.id].length > 0 && (
                                         <ul className="pl-6 mt-2">
                                             {map[node.id].map(child => (
                                                 <li key={child.id} className={`border-l pl-2 mb-2 ${getBgClass(child)}`} draggable onDragStart={(e) => handleDragStart(e, child.id)} onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, child.id)} data-item-id={child.id}>
@@ -400,6 +411,7 @@ export default function App() {
                                                                 )}
                                                             </div>
                                                             <div className="text-xs text-gray-500">{child.description}</div>
+                                                            <div className="text-lg font-semibold text-sky-700">実行予定日時: {formatScheduledAt(child.scheduled_at)}</div>
                                                             {child.due_date && <div className="text-xs text-gray-700">期限: {new Date(child.due_date).toLocaleString()}</div>}
                                                             {isExpired(child) && !isCompleted(child) && <div className="text-sm font-bold text-red-700">期限切れです</div>}
                                                             <div className="w-28 mt-1 flex items-center gap-2">
@@ -410,13 +422,13 @@ export default function App() {
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center">
-                                                            <button className="mr-2 px-2 py-1 bg-gray-200 rounded" onClick={() => reorderSwap(map[node.id], (map[node.id]||[]).findIndex(x=>x.id===child.id), -1)}>▲</button>
-                                                            <button className="mr-2 px-2 py-1 bg-gray-200 rounded" onClick={() => reorderSwap(map[node.id], (map[node.id]||[]).findIndex(x=>x.id===child.id), 1)}>▼</button>
-                                                            <button className="mr-2 px-2 py-1 bg-blue-500 text-white rounded" onClick={() => openEdit(child)}>編集</button>
+                                                            <button className="mr-2 px-2 py-1 bg-gray-200 rounded" onClick={() => reorderSwap(map[node.id], (map[node.id] || []).findIndex(x => x.id === child.id), -1)}>▲</button>
+                                                            <button className="mr-2 px-2 py-1 bg-gray-200 rounded" onClick={() => reorderSwap(map[node.id], (map[node.id] || []).findIndex(x => x.id === child.id), 1)}>▼</button>
+                                                            <button className="mr-2 px-2 py-1 bg-blue-500 text-white rounded whitespace-nowrap" onClick={() => openEdit(child)}>編集</button>
                                                             {!isCompleted(child) && (
-                                                                <button className="mr-2 px-2 py-1 bg-yellow-500 text-white rounded" onClick={() => markComplete(child.id)}>完了</button>
+                                                                <button className="mr-2 px-2 py-1 bg-yellow-500 text-white rounded whitespace-nowrap" onClick={() => markComplete(child.id)}>完了</button>
                                                             )}
-                                                            <button className="px-2 py-1 bg-red-500 text-white rounded" onClick={() => handleDelete(child.id)}>削除</button>
+                                                            <button className="px-2 py-1 bg-red-500 text-white rounded whitespace-nowrap" onClick={() => handleDelete(child.id)}>削除</button>
                                                         </div>
                                                     </div>
                                                 </li>
@@ -453,6 +465,7 @@ export default function App() {
                                                     )}
                                                 </div>
                                                 <div className="text-xs text-gray-500">{node.description}</div>
+                                                <div className="text-lg font-semibold text-sky-700">実行予定日時: {formatScheduledAt(node.scheduled_at)}</div>
                                                 {node.due_date && <div className="text-xs text-gray-700">期限: {new Date(node.due_date).toLocaleString()}</div>}
                                                 {isExpired(node) && !isCompleted(node) && <div className="text-sm font-bold text-red-700">期限切れです</div>}
                                                 <div className="w-40 mt-2 flex items-center gap-2">
@@ -465,19 +478,19 @@ export default function App() {
                                             <div className="flex items-center">
                                                 <button className="mr-2 px-2 py-1 bg-gray-200 rounded" onClick={() => reorderSwap(flat, idx, -1)}>▲</button>
                                                 <button className="mr-2 px-2 py-1 bg-gray-200 rounded" onClick={() => reorderSwap(flat, idx, 1)}>▼</button>
-                                                <button type="button" className="mr-2 px-2 py-1 bg-purple-500 text-white rounded" onClick={() => markDoTodayWithChildren(node.id)}>今日やる</button>
-                                                <button className="mr-2 px-2 py-1 bg-green-600 text-white rounded" onClick={() => openNewChild(node.id)}>子タスク新規</button>
-                                                <button className="mr-2 px-2 py-1 bg-blue-500 text-white rounded" onClick={() => openEdit(node)}>編集</button>
+                                                <button type="button" className="mr-2 px-2 py-1 bg-purple-500 text-white rounded whitespace-nowrap" onClick={() => markDoTodayWithChildren(node.id)}>今日やる</button>
+                                                <button className="mr-2 px-2 py-1 bg-green-600 text-white rounded whitespace-nowrap" onClick={() => openNewChild(node.id)}>子タスク新規</button>
+                                                <button className="mr-2 px-2 py-1 bg-blue-500 text-white rounded whitespace-nowrap" onClick={() => openEdit(node)}>編集</button>
                                                 {!isCompleted(node) && (
-                                                    <button className="mr-2 px-2 py-1 bg-yellow-500 text-white rounded" onClick={() => markComplete(node.id)}>完了</button>
+                                                    <button className="mr-2 px-2 py-1 bg-yellow-500 text-white rounded whitespace-nowrap" onClick={() => markComplete(node.id)}>完了</button>
                                                 )}
-                                                <button className="px-2 py-1 bg-red-500 text-white rounded" onClick={() => handleDelete(node.id)}>削除</button>
+                                                <button className="px-2 py-1 bg-red-500 text-white rounded whitespace-nowrap" onClick={() => handleDelete(node.id)}>削除</button>
                                             </div>
                                         </div>
-                                                {map[node.id] && map[node.id].length > 0 && (
+                                        {map[node.id] && map[node.id].length > 0 && (
                                             <ul className="pl-6 mt-2">
                                                 {map[node.id].map(child => (
-                                                            <li key={child.id} className={`border-l pl-2 mb-2 ${getBgClass(child)}`} draggable onDragStart={(e) => handleDragStart(e, child.id)} onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, child.id)} data-item-id={child.id}>
+                                                    <li key={child.id} className={`border-l pl-2 mb-2 ${getBgClass(child)}`} draggable onDragStart={(e) => handleDragStart(e, child.id)} onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, child.id)} data-item-id={child.id}>
                                                         <div className="flex justify-between items-center">
                                                             <div>
                                                                 <div className="flex items-center gap-2">
@@ -489,6 +502,7 @@ export default function App() {
                                                                     )}
                                                                 </div>
                                                                 <div className="text-xs text-gray-500">{child.description}</div>
+                                                                <div className="text-lg font-semibold text-sky-700">実行予定日時: {formatScheduledAt(child.scheduled_at)}</div>
                                                                 {child.due_date && <div className="text-xs text-gray-700">期限: {new Date(child.due_date).toLocaleString()}</div>}
                                                                 {isExpired(child) && !isCompleted(child) && <div className="text-sm font-bold text-red-700">期限切れです</div>}
                                                                 <div className="w-28 mt-1 flex items-center gap-2">
@@ -500,13 +514,13 @@ export default function App() {
                                                             </div>
                                                             <div className="flex items-center">
                                                                 {/* 子タスクは親の操作で一括設定するため、個別の「今日やる」ボタンは非表示 */}
-                                                                <button className="mr-2 px-2 py-1 bg-gray-200 rounded" onClick={() => reorderSwap(map[node.id], (map[node.id]||[]).findIndex(x=>x.id===child.id), -1)}>▲</button>
-                                                                <button className="mr-2 px-2 py-1 bg-gray-200 rounded" onClick={() => reorderSwap(map[node.id], (map[node.id]||[]).findIndex(x=>x.id===child.id), 1)}>▼</button>
-                                                                <button className="mr-2 px-2 py-1 bg-blue-500 text-white rounded" onClick={() => openEdit(child)}>編集</button>
+                                                                <button className="mr-2 px-2 py-1 bg-gray-200 rounded" onClick={() => reorderSwap(map[node.id], (map[node.id] || []).findIndex(x => x.id === child.id), -1)}>▲</button>
+                                                                <button className="mr-2 px-2 py-1 bg-gray-200 rounded" onClick={() => reorderSwap(map[node.id], (map[node.id] || []).findIndex(x => x.id === child.id), 1)}>▼</button>
+                                                                <button className="mr-2 px-2 py-1 bg-blue-500 text-white rounded whitespace-nowrap" onClick={() => openEdit(child)}>編集</button>
                                                                 {!isCompleted(child) && (
-                                                                    <button className="mr-2 px-2 py-1 bg-yellow-500 text-white rounded" onClick={() => markComplete(child.id)}>完了</button>
+                                                                    <button className="mr-2 px-2 py-1 bg-yellow-500 text-white rounded whitespace-nowrap" onClick={() => markComplete(child.id)}>完了</button>
                                                                 )}
-                                                                <button className="px-2 py-1 bg-red-500 text-white rounded" onClick={() => handleDelete(child.id)}>削除</button>
+                                                                <button className="px-2 py-1 bg-red-500 text-white rounded whitespace-nowrap" onClick={() => handleDelete(child.id)}>削除</button>
                                                             </div>
                                                         </div>
                                                     </li>

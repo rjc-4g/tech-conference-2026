@@ -5,6 +5,8 @@
     "main": "src/index.js",
     "scripts": {
         "start": "node src/index.js",
+        "test": "jest --runInBand --verbose --detectOpenHandles",
+        "test:watch": "jest --watch --verbose",
         "migrate:remove-auto-priority": "node scripts/migrate_remove_auto_priority.js",
         "migrate:add-is-today": "node scripts/migrate_add_is_today.js"
     },
@@ -13,5 +15,9 @@
         "fastify": "^4.23.0",
         "@fastify/cors": "^9.0.0",
         "uuid": "^9.0.0"
+    },
+    "devDependencies": {
+        "jest": "^29.7.0",
+        "supertest": "^6.3.3"
     }
 }

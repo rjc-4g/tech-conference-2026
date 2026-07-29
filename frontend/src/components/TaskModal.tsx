@@ -14,6 +14,7 @@ type Props = {
 export default function TaskModal({ task, onClose, onSave, parentForNew, hideParent }: Props) {
     const [title, setTitle] = useState(task?.title || '')
     const [description, setDescription] = useState(task?.description || '')
+    const [scheduledAt, setScheduledAt] = useState<string | null>(task?.scheduled_at || null)
     const [dueDate, setDueDate] = useState<string | null>(task?.due_date || null)
     const [categoryId, setCategoryId] = useState<string | null>(task?.category_id || null)
     const [parentId, setParentId] = useState<string | null>(task?.parent_id || parentForNew || null)
@@ -23,6 +24,7 @@ export default function TaskModal({ task, onClose, onSave, parentForNew, hidePar
     useEffect(() => {
         setTitle(task?.title || '')
         setDescription(task?.description || '')
+        setScheduledAt(task?.scheduled_at || null)
         setDueDate(task?.due_date || null)
         setCategoryId(task?.category_id || null)
         setParentId(task?.parent_id || parentForNew || null)
@@ -40,13 +42,13 @@ export default function TaskModal({ task, onClose, onSave, parentForNew, hidePar
 
     async function save(e: React.FormEvent) {
         e.preventDefault()
-        if (!title || !dueDate || !description || !categoryId) {
-            alert('タイトル、期限日時、説明、カテゴリは必須です')
+        if (!title || !scheduledAt || !dueDate || !description || !categoryId) {
+            alert('タイトル、実行予定日時、期限日時、説明、カテゴリは必須です')
             return
         }
         // If hideParent is true, force parent to parentForNew (may be null for top-level)
         const finalParent = hideParent ? parentForNew : parentId
-        const payload = { title, description, dueDate, categoryId, parentId: finalParent }
+        const payload = { title, description, scheduledAt, dueDate, categoryId, parentId: finalParent }
         await onSave(payload)
     }
 
@@ -58,6 +60,10 @@ export default function TaskModal({ task, onClose, onSave, parentForNew, hidePar
                     <div className="mb-2">
                         <label className="block text-sm">タイトル <span className="text-red-600">*</span></label>
                         <input className="w-full border p-1" value={title} onChange={(e) => setTitle(e.target.value)} />
+                    </div>
+                    <div className="mb-2">
+                        <label className="block text-sm">実行予定日時 <span className="text-red-600">*</span></label>
+                        <input type="datetime-local" className="w-full border p-1" value={scheduledAt ? new Date(scheduledAt).toISOString().slice(0, 16) : ''} onChange={(e) => setScheduledAt(e.target.value ? new Date(e.target.value).toISOString() : null)} />
                     </div>
                     <div className="mb-2">
                         <label className="block text-sm">期限日時 <span className="text-red-600">*</span></label>
