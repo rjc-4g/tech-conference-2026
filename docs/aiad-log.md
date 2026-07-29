@@ -433,131 +433,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 
 - なし。
 
-### 2026-07-29: README画像の最新版差し替え
-
-#### 指示内容
-
-READMEに古い画像が混ざっているため、最新版の画像で揃える。
-
-#### 成果物
-
-- `README.md`
-  - 参照画像を `docs/screenshots/readme-*.png` の最新版セットへ統一。
-- `docs/screenshots/readme-home.png`
-- `docs/screenshots/readme-create-modal.png`
-- `docs/screenshots/readme-first-action-modal.png`
-- `docs/screenshots/readme-today-warning.png`
-- `docs/screenshots/readme-settings-modal.png`
-- `docs/screenshots/readme-today-filter.png`
-- `docs/screenshots/readme-filtered-child-parent-name.png`
-- `docs/screenshots/readme-hierarchy.png`
-- `docs/screenshots/readme-delete-cascade.png`
-- `docs/screenshots/readme-progress-complete.png`
-- `docs/screenshots/readme-completed-category.png`
-
-#### やり直し回数
-
-2回
-
-#### 人間レビューが必要だった箇所
-
-- なし。既存仕様の画面説明に対応する画像を、現在のアプリ画面から撮り直した。
-
-#### テスト結果
-
-- README内の画像リンクがすべて実在することを確認。
-- Playwrightで1366px幅の最新版スクリーンショットを撮影。
-- 代表画像として一覧画面、登録モーダル、削除後状態、今日やる上限警告を目視確認。
-- 撮影のため一時的に変更したインメモリ状態は、`docker compose restart backend frontend` で初期状態へ戻した。
-
-#### テストで落ちた内容
-
-- in-app browserのスクリーンショットでは横幅が切れ、ビューポート固定後も表示が縦詰まりになったため、通常のPlaywrightヘッドレス撮影に切り替えた。
-- 通常のPlaywright初回撮影ではPowerShell経由で日本語パス・日本語ロケータが文字化けしたため、`process.cwd()` とCSSセレクタ中心の操作に変更して成功。
-- 今日やる上限警告画像では一時タスク名が文字化けしたため、タスク追加ではなく `todayTaskLimit` を一時的に下げる方法へ変更して成功。
-
-### 2026-07-29: READMEへの画面の使い方追記
-
-#### 指示内容
-
-READMEに画面の使い方を画像付きで記載する。
-
-#### 成果物
-
-- `README.md`
-  - アプリ概要を追記。
-  - Docker Composeでの起動・停止方法を追記。
-  - 一覧画面、TODO登録、最初の一歩、今日やるTODO、設定、検索・フィルタ、親子タスク、削除、進捗率、完了済み表示の使い方を画像付きで追記。
-  - インメモリ保存であり、再起動時に初期データへ戻る注意を追記。
-  - 主なテスト・ビルドコマンドを追記。
-
-#### やり直し回数
-
-0回
-
-#### 人間レビューが必要だった箇所
-
-- なし。既存仕様と既存スクリーンショットをREADMEへ整理したドキュメント更新として対応した。
-
-#### テスト結果
-
-- README内の画像リンクがすべて実在することを確認。
-
-#### テストで落ちた内容
-
-- なし。コード変更ではないため、フロントエンド/バックエンドのテストは実行していない。
-
-### 2026-07-29: 削除確認と親削除時の子タスク削除
-
-#### 指示内容
-
-親タスクを削除したら子タスクも削除されること。削除ボタン押下時は本当に削除してよいか確認ダイアログを表示すること。
-
-#### 成果物
-
-- `docs/design.md`
-  - 親タスク削除時は紐づく子タスクも削除する仕様を追記。
-  - 削除ボタン押下時に確認ダイアログを表示する仕様を追記。
-  - 親タスク削除時は子タスクも削除されることを確認ダイアログで示す仕様を追記。
-- `backend/src/store.ts`
-  - `deleteTask` を変更し、親タスク削除時に子孫タスクも削除するようにした。
-- `backend/src/app.test.ts`
-  - 親タスク削除時に子タスクも取得できなくなるAPIテストを追加。
-- `frontend/src/App.tsx`
-  - 削除ボタン押下時に `window.confirm` を表示。
-  - 子タスクがある場合は、削除される子タスク件数を確認文言に含める。
-  - 削除対象の子孫タスクを数える `getDescendantTasks` を追加。
-- `frontend/src/App.test.tsx`
-  - `getDescendantTasks` の確認を追加。
-- `docs/screenshots/delete-confirm-cascade.png`
-
-#### やり直し回数
-
-1回
-
-#### 人間レビューが必要だった箇所
-
-- なし。削除前確認と親削除時の子タスク削除は、ユーザー指示に沿った既存削除仕様の明確化として実装した。
-
-#### テスト結果
-
-- `npm run test:backend`: 成功。12 tests passed。
-- `npm run test:frontend`: 成功。9 tests passed。
-- `npx tsc -b frontend`: 成功。
-- `npm run build -w backend`: 成功。
-- `docker compose exec -T frontend npm run build -w frontend`: 成功。
-- `docker compose exec -T backend npm run build -w backend`: 成功。
-- `docker compose up -d --build`: 成功。
-- Playwright確認:
-  - 削除ボタン押下時に確認ダイアログが表示されることを確認。
-  - 親タスク削除確認文言に、子タスク1件も削除される旨が含まれることを確認。
-  - 確認ダイアログでOKを選ぶと、親タスク1件と子タスク1件の合計2件が画面から消えることを確認。
-  - 確認後、インメモリ状態を戻すため `docker compose restart backend frontend` を実行。
-
-#### テストで落ちた内容
-
-- Playwright確認: 初回はスクリプト内の日本語文字列がPowerShell経由で崩れ、対象カード検索に失敗。文字列依存を避けて先頭の親カードを対象にする形へ変更して成功。
-
 ### 2026-07-29: カード上の進捗スライダー操作と完了時ロック
 
 #### 指示内容
@@ -612,57 +487,6 @@ READMEに画面の使い方を画像付きで記載する。
 - `npm run build -w backend`: 初回、`TaskStore` という誤った型名で `tsc` が失敗。正しい `TodoStore` に修正して成功。
 - `npm run build -w frontend`: Windowsローカルでは `vite build` が詳細エラーなしの終了コード `3221226505` で失敗。`npx tsc -b frontend` は成功し、Docker内の `npm run build -w frontend` は成功したため、実装・型ではなくローカルWindows上のViteバンドル工程の問題として扱う。
 - Playwright確認: 通常権限ではブラウザ起動が `spawn EPERM` で失敗。権限昇格して再実行し成功。
-
-### 2026-07-29: カテゴリ色のカード反映と完了済み表示強化
-
-#### 指示内容
-
-カテゴリに付けた色とTODOカードの色を合わせる。
-また、タスク完了にしたものをもっとわかりやすくする。
-ルールを変更しているため、再度ルール確認の上でログを残す。
-
-#### 成果物
-
-- `docs/design.md`
-  - タスク一覧の表示項目に、カテゴリ色を反映したカード表示と完了済みタスクの明示表示を追記。
-- `frontend/src/App.tsx`
-  - カテゴリ色からカード用の色、背景色、枠線色を生成する `getCategoryCardColors` を追加。
-  - TODOカードにカテゴリ色のCSS変数を渡す処理を追加。
-  - 完了済みタスクに `完了済み` ラベルを表示。
-- `frontend/src/App.css`
-  - TODOカードの左線、背景、枠線にカテゴリ色を反映。
-  - 完了済みカードの背景、タイトル取り消し線、文字色を調整。
-  - `完了済み` ラベルのスタイルを追加。
-- `frontend/src/App.test.tsx`
-  - カテゴリ色からカード表示色を生成するhelperテストを追加。
-- `docs/screenshots/todo-category-color-done.png`
-
-#### やり直し回数
-
-1回
-
-#### 人間レビューが必要だった箇所
-
-- なし。既存のカテゴリ色と完了状態の表示改善として対応した。
-
-#### テスト結果
-
-- `npm run test:frontend`: 成功。8 tests passed。
-- `npm run test:backend`: 成功。10 tests passed。
-- `docker compose up -d --build`: 成功。
-- Playwright確認:
-  - カテゴリ色 `#0ea5e9` がカード左線に反映され、算出結果が `rgb(14, 165, 233)` になることを確認。
-  - カード背景にカテゴリ色由来の薄いRGBA背景が使われることを確認。
-  - タスクを完了すると `完了済み` ラベルが表示されることを確認。
-  - 完了済みタスクのタイトルに取り消し線が表示されることを確認。
-- `docker compose exec -T frontend npm run build -w frontend`: 成功。
-- `docker compose exec -T backend npm run build -w backend`: 成功。
-
-#### テストで落ちた内容
-
-- 1回目のPlaywright確認: 失敗。
-  - 内容: サンドボックス内でChromium起動が `spawn EPERM` で失敗した。
-  - 対応: UI確認にブラウザ起動が必要なため、権限付きで再実行して成功した。
 
 ### 2026-07-29: 設定UIのモーダル化
 
@@ -831,6 +655,64 @@ READMEに画面の使い方を画像付きで記載する。
 
 - なし。
 
+### 2026-07-29: カテゴリ色のカード反映と完了済み表示強化
+
+#### 指示内容
+
+カテゴリに付けた色とTODOカードの色を合わせる。
+また、タスク完了にしたものをもっとわかりやすくする。
+ルールを変更しているため、再度ルール確認の上でログを残す。
+
+#### 成果物
+
+- `docs/design.md`
+  - タスク一覧の表示項目に、カテゴリ色を反映したカード表示と完了済みタスクの明示表示を追記。
+- `frontend/src/App.tsx`
+  - カテゴリ色からカード用の色、背景色、枠線色を生成する `getCategoryCardColors` を追加。
+  - TODOカードにカテゴリ色のCSS変数を渡す処理を追加。
+  - 完了済みタスクに `完了済み` ラベルを表示。
+- `frontend/src/App.css`
+  - TODOカードの左線、背景、枠線にカテゴリ色を反映。
+  - 完了済みカードの背景、タイトル取り消し線、文字色を調整。
+  - `完了済み` ラベルのスタイルを追加。
+- `frontend/src/App.test.tsx`
+  - カテゴリ色からカード表示色を生成するhelperテストを追加。
+- `docs/screenshots/todo-category-color-done.png`
+
+#### やり直し回数
+
+1回
+
+#### 人間レビューが必要だった箇所
+
+- なし。既存のカテゴリ色と完了状態の表示改善として対応した。
+
+#### テスト結果
+
+- `npm run test:frontend`: 成功。8 tests passed。
+- `npm run test:backend`: 成功。10 tests passed。
+- `docker compose up -d --build`: 成功。
+- Playwright確認:
+  - カテゴリ色 `#0ea5e9` がカード左線に反映され、算出結果が `rgb(14, 165, 233)` になることを確認。
+  - カード背景にカテゴリ色由来の薄いRGBA背景が使われることを確認。
+  - タスクを完了すると `完了済み` ラベルが表示されることを確認。
+  - 完了済みタスクのタイトルに取り消し線が表示されることを確認。
+- `docker compose exec -T frontend npm run build -w frontend`: 成功。
+- `docker compose exec -T backend npm run build -w backend`: 成功。
+
+#### テストで落ちた内容
+
+- 1回目のPlaywright確認: 失敗。
+  - 内容: サンドボックス内でChromium起動が `spawn EPERM` で失敗した。
+  - 対応: UI確認にブラウザ起動が必要なため、権限付きで再実行して成功した。
+
+#### トークン使用量
+- 入力: 3,897,762
+- キャッシュ入力: 3,828,480
+- 出力: 8,279
+- 推論出力: 1,475
+- 合計: 3,906,041
+
 ### 2026-07-29: フィルタ時の子タスクラベル修正
 
 #### 指示内容
@@ -870,3 +752,150 @@ READMEに画面の使い方を画像付きで記載する。
 #### テストで落ちた内容
 
 - なし。
+
+#### トークン使用量
+- 入力: 3,540,233
+- キャッシュ入力: 3,319,552
+- 出力: 20,146
+- 推論出力: 4,405
+- 合計: 3,560,379
+
+### 2026-07-29: 削除確認と親削除時の子タスク削除
+
+#### 指示内容
+
+親タスクを削除したら子タスクも削除されること。削除ボタン押下時は本当に削除してよいか確認ダイアログを表示すること。
+
+#### 成果物
+
+- `docs/design.md`
+  - 親タスク削除時は紐づく子タスクも削除する仕様を追記。
+  - 削除ボタン押下時に確認ダイアログを表示する仕様を追記。
+  - 親タスク削除時は子タスクも削除されることを確認ダイアログで示す仕様を追記。
+- `backend/src/store.ts`
+  - `deleteTask` を変更し、親タスク削除時に子孫タスクも削除するようにした。
+- `backend/src/app.test.ts`
+  - 親タスク削除時に子タスクも取得できなくなるAPIテストを追加。
+- `frontend/src/App.tsx`
+  - 削除ボタン押下時に `window.confirm` を表示。
+  - 子タスクがある場合は、削除される子タスク件数を確認文言に含める。
+  - 削除対象の子孫タスクを数える `getDescendantTasks` を追加。
+- `frontend/src/App.test.tsx`
+  - `getDescendantTasks` の確認を追加。
+- `docs/screenshots/delete-confirm-cascade.png`
+
+#### やり直し回数
+
+1回
+
+#### 人間レビューが必要だった箇所
+
+- なし。削除前確認と親削除時の子タスク削除は、ユーザー指示に沿った既存削除仕様の明確化として実装した。
+
+#### テスト結果
+
+- `npm run test:backend`: 成功。12 tests passed。
+- `npm run test:frontend`: 成功。9 tests passed。
+- `npx tsc -b frontend`: 成功。
+- `npm run build -w backend`: 成功。
+- `docker compose exec -T frontend npm run build -w frontend`: 成功。
+- `docker compose exec -T backend npm run build -w backend`: 成功。
+- `docker compose up -d --build`: 成功。
+- Playwright確認:
+  - 削除ボタン押下時に確認ダイアログが表示されることを確認。
+  - 親タスク削除確認文言に、子タスク1件も削除される旨が含まれることを確認。
+  - 確認ダイアログでOKを選ぶと、親タスク1件と子タスク1件の合計2件が画面から消えることを確認。
+  - 確認後、インメモリ状態を戻すため `docker compose restart backend frontend` を実行。
+
+#### テストで落ちた内容
+
+- Playwright確認: 初回はスクリプト内の日本語文字列がPowerShell経由で崩れ、対象カード検索に失敗。文字列依存を避けて先頭の親カードを対象にする形へ変更して成功。
+
+### トークン使用量
+- 入力: 2,016,955
+- キャッシュ入力: 1,767,424
+- 出力: 8,570
+- 推論出力: 2,199
+- 合計: 2,025,525
+
+### 2026-07-29: READMEへの画面の使い方追記
+
+#### 指示内容
+
+READMEに画面の使い方を画像付きで記載する。
+
+#### 成果物
+
+- `README.md`
+  - アプリ概要を追記。
+  - Docker Composeでの起動・停止方法を追記。
+  - 一覧画面、TODO登録、最初の一歩、今日やるTODO、設定、検索・フィルタ、親子タスク、削除、進捗率、完了済み表示の使い方を画像付きで追記。
+  - インメモリ保存であり、再起動時に初期データへ戻る注意を追記。
+  - 主なテスト・ビルドコマンドを追記。
+
+#### やり直し回数
+
+0回
+
+#### 人間レビューが必要だった箇所
+
+- なし。既存仕様と既存スクリーンショットをREADMEへ整理したドキュメント更新として対応した。
+
+#### テスト結果
+
+- README内の画像リンクがすべて実在することを確認。
+
+#### テストで落ちた内容
+
+- なし。コード変更ではないため、フロントエンド/バックエンドのテストは実行していない。
+
+
+### 2026-07-29: README画像の最新版差し替え
+
+#### 指示内容
+
+READMEに古い画像が混ざっているため、最新版の画像で揃える。
+
+#### 成果物
+
+- `README.md`
+  - 参照画像を `docs/screenshots/readme-*.png` の最新版セットへ統一。
+- `docs/screenshots/readme-home.png`
+- `docs/screenshots/readme-create-modal.png`
+- `docs/screenshots/readme-first-action-modal.png`
+- `docs/screenshots/readme-today-warning.png`
+- `docs/screenshots/readme-settings-modal.png`
+- `docs/screenshots/readme-today-filter.png`
+- `docs/screenshots/readme-filtered-child-parent-name.png`
+- `docs/screenshots/readme-hierarchy.png`
+- `docs/screenshots/readme-delete-cascade.png`
+- `docs/screenshots/readme-progress-complete.png`
+- `docs/screenshots/readme-completed-category.png`
+
+#### やり直し回数
+
+2回
+
+#### 人間レビューが必要だった箇所
+
+- なし。既存仕様の画面説明に対応する画像を、現在のアプリ画面から撮り直した。
+
+#### テスト結果
+
+- README内の画像リンクがすべて実在することを確認。
+- Playwrightで1366px幅の最新版スクリーンショットを撮影。
+- 代表画像として一覧画面、登録モーダル、削除後状態、今日やる上限警告を目視確認。
+- 撮影のため一時的に変更したインメモリ状態は、`docker compose restart backend frontend` で初期状態へ戻した。
+
+#### テストで落ちた内容
+
+- in-app browserのスクリーンショットでは横幅が切れ、ビューポート固定後も表示が縦詰まりになったため、通常のPlaywrightヘッドレス撮影に切り替えた。
+- 通常のPlaywright初回撮影ではPowerShell経由で日本語パス・日本語ロケータが文字化けしたため、`process.cwd()` とCSSセレクタ中心の操作に変更して成功。
+- 今日やる上限警告画像では一時タスク名が文字化けしたため、タスク追加ではなく `todayTaskLimit` を一時的に下げる方法へ変更して成功。
+
+### トークン使用量
+- 入力: 11,582,844
+- キャッシュ入力: 11,302,912
+- 出力: 26,303
+- 推論出力: 5,791
+- 合計: 11,609,147
