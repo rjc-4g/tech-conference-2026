@@ -348,3 +348,127 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 - `npm run build`: 失敗。
   - 内容: Windowsホスト上のfrontend Vite production buildが `transforming...` 後に終了コード `3221226505` で異常終了した。
   - 対応方針: 既知のホスト側Vite build問題として扱い、Dockerコンテナ内のfrontend/backend build成功で検証した。
+
+### 2026-07-29: Phase 3 残り機能の実装
+
+#### 指示内容
+
+残りPhase 3の実装を行う。
+
+#### 成果物
+
+- `frontend/src/App.tsx`
+  - 「最初の一歩」が未設定の未完了タスクに `最初の一歩 未設定` の明示表示を追加。
+  - 今日やるTODOエリアに、設定済みの「最初の一歩」をタスク名の下へ表示。
+  - 登録・編集モーダルでタイトル入力済みかつ「最初の一歩」が空の場合、推奨入力の警告を表示。
+  - `isFirstActionUnset` helperを追加。
+- `frontend/src/App.css`
+  - 今日やるTODO内の「最初の一歩」表示スタイルを追加。
+  - 「最初の一歩 未設定」警告のスタイルを追加。
+- `frontend/src/App.test.tsx`
+  - 「最初の一歩」未設定判定のテストを追加。
+- `docs/screenshots/todo-phase3-first-action.png`
+- `docs/screenshots/todo-phase3-first-action-modal.png`
+
+#### Codex CLI利用状況
+
+- 開始前: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+- 終了後: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+
+#### やり直し回数
+
+2回
+
+#### 人間レビューが必要だった箇所
+
+- Phase 3の独自価値機能は実装前レビュー対象だが、ユーザーから「残りフェーズ３の実装を行ってください」と明示指示があったため、実装承認済みとして進めた。
+
+#### Cursorレビュー指摘
+
+未実施。
+
+#### テスト結果
+
+- `npm run test:frontend`: 成功。5 tests passed。
+- `npm run test:backend`: 成功。6 tests passed。
+- `docker compose up -d --build`: 成功。
+- Playwright確認:
+  - `.task-alert.action-missing` が2件表示されることを確認。
+  - 登録モーダルでタイトル入力時に「最初の一歩」推奨警告が表示されることを確認。
+- `docker compose exec -T frontend npm run build -w frontend`: 成功。
+- `docker compose exec -T backend npm run build -w backend`: 成功。
+
+#### テストで落ちた内容
+
+- 1回目の `npm run test:frontend`: 失敗。
+  - 内容: SSR文字列検証で、未表示状態の登録モーダル内文言を期待していた。
+  - 対応: モーダル内文言のSSR検証を削除し、`isFirstActionUnset` のhelperテストで判定ロジックを検証した。
+- 1回目のPlaywright確認: 失敗。
+  - 内容: `最初の一歩 未設定` が複数件表示され、strict locatorが解決できなかった。
+  - 対応: `.task-alert.action-missing` のclass locatorで件数確認する形に変更した。
+- 2回目のPlaywright確認: 失敗。
+  - 内容: タスク名に一致する要素が複数あり、strict locatorが解決できなかった。
+  - 対応: 日本語テキスト一致ではなく、安定したCSS selectorで確認した。
+
+### 2026-07-29: 進捗率の手入力対応
+
+#### 指示内容
+
+進捗率を手入力できるようにする。
+
+#### 成果物
+
+- `docs/design.md`
+  - 進捗率を子タスク完了率の自動計算ではなく、0から100の整数を手入力する仕様へ更新。
+  - 完了操作時は進捗率を100%へ更新する仕様を追記。
+- `backend/src/types.ts`
+  - `Task` と `TaskInput` に `progress` を追加。
+- `backend/src/store.ts`
+  - `progress` を保存項目として扱うように変更。
+  - `progress` の0から100の整数バリデーションを追加。
+  - 完了操作時に `progress` を100へ更新。
+- `backend/src/app.test.ts`
+  - 進捗率の登録、更新、完了時100%、不正値拒否のテストを追加。
+- `frontend/src/App.tsx`
+  - 登録・編集モーダルに進捗率入力欄を追加。
+  - 編集時に既存進捗率をフォームへ反映。
+- `docs/screenshots/todo-progress-input-modal.png`
+- `docs/screenshots/todo-progress-input-list.png`
+
+#### Codex CLI利用状況
+
+- 開始前: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+- 終了後: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+
+#### やり直し回数
+
+1回
+
+#### 人間レビューが必要だった箇所
+
+- 進捗率の扱いが既存設計の子タスク完了率自動計算と衝突したため、ユーザー指示に合わせて手入力仕様へ設計書を更新した。
+
+#### Cursorレビュー指摘
+
+未実施。
+
+#### テスト結果
+
+- `npm run test:backend`: 成功。7 tests passed。
+- `npm run test:frontend`: 成功。5 tests passed。
+- `docker compose up -d --build`: 成功。
+- Playwright確認:
+  - 編集モーダルで進捗率 `45` を入力できることを確認。
+  - 保存後、一覧の進捗表示が `45%` になり、進捗バーに反映されることを確認。
+- `docker compose exec -T frontend npm run build -w frontend`: 成功。
+- `docker compose exec -T backend npm run build -w backend`: 成功。
+
+#### テストで落ちた内容
+
+- 1回目のPlaywright確認: 失敗。
+  - 内容: `保存` ボタンが設定UIとタスク編集モーダルの2か所にあり、strict locatorが解決できなかった。
+  - 対応: `.modal` 内の `保存` ボタンに絞って再実行し、成功した。

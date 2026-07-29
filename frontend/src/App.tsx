@@ -49,6 +49,7 @@ type TaskFormState = {
   isToday: boolean
   parentTaskId: string
   firstAction: string
+  progress: number
 }
 
 const emptyForm: TaskFormState = {
@@ -60,6 +61,7 @@ const emptyForm: TaskFormState = {
   isToday: false,
   parentTaskId: '',
   firstAction: '',
+  progress: 0,
 }
 
 const defaultSettings: UserSettings = {
@@ -104,6 +106,7 @@ function App() {
   const isTodayOverLimit = todayTasks.length > settings.todayTaskLimit
   const modalTodayCount = getNextTodayTaskCount(tasks, form.isToday, editingTask)
   const willExceedTodayLimit = form.isToday && modalTodayCount > settings.todayTaskLimit
+  const isFirstActionMissing = form.title.trim().length > 0 && form.firstAction.trim().length === 0
 
   useEffect(() => {
     void loadInitialData()
@@ -171,6 +174,7 @@ function App() {
       isToday: task.isToday,
       parentTaskId: task.parentTaskId ?? '',
       firstAction: task.firstAction ?? '',
+      progress: task.progress,
     })
     setIsModalOpen(true)
   }
@@ -304,7 +308,12 @@ function App() {
           {todayTasks.length === 0 ? (
             <span>対象タスクはありません。</span>
           ) : (
-            todayTasks.map((task) => <span key={task.id}>{task.title}</span>)
+            todayTasks.map((task) => (
+              <span key={task.id}>
+                {task.title}
+                {task.firstAction && <small>{task.firstAction}</small>}
+              </span>
+            ))
           )}
         </div>
       </section>
@@ -436,6 +445,7 @@ function App() {
                     {isStaleTask(task, settings.staleTaskDays) && (
                       <span className="task-alert stale">未着手 {settings.staleTaskDays}日以上</span>
                     )}
+                    {isFirstActionUnset(task) && <span className="task-alert action-missing">最初の一歩 未設定</span>}
                   </div>
                   {task.description && <p>{task.description}</p>}
                 </div>
@@ -522,9 +532,15 @@ function App() {
               <input
                 maxLength={100}
                 value={form.firstAction}
+                placeholder="例: 資料を5分だけ開く"
                 onChange={(event) => setForm({ ...form, firstAction: event.target.value })}
               />
             </label>
+            {isFirstActionMissing && (
+              <p className="form-warning">
+                最初の一歩を入れると、登録後すぐ着手しやすくなります。登録はできます。
+              </p>
+            )}
             <div className="form-grid">
               <label>
                 期限
@@ -544,6 +560,17 @@ function App() {
                   <option value="medium">中</option>
                   <option value="high">高</option>
                 </select>
+              </label>
+              <label>
+                進捗率
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={form.progress}
+                  onChange={(event) => setForm({ ...form, progress: Number(event.target.value) })}
+                />
               </label>
             </div>
             <div className="form-grid">
@@ -671,6 +698,10 @@ export function isStaleTask(
 
   const elapsedMs = now.getTime() - createdAt.getTime()
   return elapsedMs >= staleTaskDays * 24 * 60 * 60 * 1000
+}
+
+export function isFirstActionUnset(task: Pick<Task, 'firstAction' | 'status'>) {
+  return task.status !== 'done' && !task.firstAction?.trim()
 }
 
 export function getNextTodayTaskCount(tasks: Task[], nextIsToday: boolean, editingTask: Task | null) {

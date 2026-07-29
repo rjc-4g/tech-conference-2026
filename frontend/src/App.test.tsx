@@ -4,6 +4,7 @@ import App, {
   buildTaskHierarchy,
   getIncompleteChildren,
   getNextTodayTaskCount,
+  isFirstActionUnset,
   isOverdue,
   isStaleTask,
 } from './App'
@@ -105,5 +106,12 @@ describe('App', () => {
 
     expect(getNextTodayTaskCount([...tasks], true, null)).toBe(2)
     expect(getIncompleteChildren([...tasks], 'parent')).toHaveLength(1)
+  })
+
+  it('detects tasks without first action while excluding completed tasks', () => {
+    expect(isFirstActionUnset({ status: 'todo', firstAction: '' })).toBe(true)
+    expect(isFirstActionUnset({ status: 'in_progress' })).toBe(true)
+    expect(isFirstActionUnset({ status: 'done' })).toBe(false)
+    expect(isFirstActionUnset({ status: 'todo', firstAction: '資料を5分開く' })).toBe(false)
   })
 })

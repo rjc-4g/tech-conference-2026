@@ -27,18 +27,42 @@ describe("tasks api", () => {
         priority: "high",
         isToday: true,
         firstAction: "失敗するテストを1つ書く",
+        progress: 35,
       })
       .expect(201);
 
     expect(created.body.title).toBe("テストを書く");
     expect(created.body.firstAction).toBe("失敗するテストを1つ書く");
+    expect(created.body.progress).toBe(35);
 
     const completed = await request(app)
       .patch(`/api/tasks/${created.body.id}/complete`)
       .expect(200);
 
     expect(completed.body.status).toBe("done");
+    expect(completed.body.progress).toBe(100);
     expect(completed.body.completedAt).toBeTruthy();
+  });
+
+  it("updates progress manually and rejects invalid progress", async () => {
+    const created = await request(app)
+      .post("/api/tasks")
+      .send({ title: "進捗を入れる", priority: "medium", isToday: false, progress: 20 })
+      .expect(201);
+
+    const updated = await request(app)
+      .put(`/api/tasks/${created.body.id}`)
+      .send({ title: "進捗を入れる", priority: "medium", isToday: false, progress: 65 })
+      .expect(200);
+
+    expect(updated.body.progress).toBe(65);
+
+    const response = await request(app)
+      .put(`/api/tasks/${created.body.id}`)
+      .send({ title: "進捗を入れる", priority: "medium", isToday: false, progress: 101 })
+      .expect(400);
+
+    expect(response.body.message).toContain("Progress");
   });
 
   it("filters by keyword and sorts by priority", async () => {

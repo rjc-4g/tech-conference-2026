@@ -11,6 +11,7 @@ export type Task = {
   categoryId?: string;
   parentTaskId?: string;
   firstAction?: string;
+  progress: number;
   isToday: boolean;
   startedAt?: string;
   completedAt?: string;
@@ -40,5 +41,6 @@ export type TaskInput = {
   categoryId?: unknown;
   parentTaskId?: unknown;
   firstAction?: unknown;
+  progress?: unknown;
   isToday?: unknown;
 };

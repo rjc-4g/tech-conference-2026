@@ -304,11 +304,19 @@ button:hover {
 }
 
 .today-list span {
+  display: grid;
+  gap: 2px;
   border-radius: 999px;
   padding: 5px 10px;
   background: #ffffff;
   color: #134e4a;
   font-size: 14px;
+}
+
+.today-list small {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .filters {
@@ -508,6 +516,11 @@ button:hover {
 .task-alert.stale {
   color: #92400e;
   background: #fef3c7;
+}
+
+.task-alert.action-missing {
+  color: #1d4ed8;
+  background: #dbeafe;
 }
 
 .relationship-row {

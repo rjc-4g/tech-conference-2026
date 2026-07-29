@@ -131,6 +131,7 @@ export class TodoStore {
     const next: Task = {
       ...task,
       status: "done",
+      progress: 100,
       completedAt: now,
       updatedAt: now,
     };
@@ -227,13 +228,7 @@ export class TodoStore {
   }
 
   getProgress(taskId: string) {
-    const children = [...this.tasks.values()].filter((task) => task.parentTaskId === taskId);
-    if (children.length === 0) {
-      return this.getTask(taskId).status === "done" ? 100 : 0;
-    }
-
-    const doneCount = children.filter((task) => task.status === "done").length;
-    return Math.round((doneCount / children.length) * 100);
+    return this.getTask(taskId).progress;
   }
 
   private normalizeTaskInput(input: TaskInput, current?: Task) {
@@ -252,6 +247,7 @@ export class TodoStore {
       typeof input.firstAction === "string" && input.firstAction.trim()
         ? input.firstAction.trim()
         : undefined;
+    const progress = Number(input.progress ?? current?.progress ?? 0);
     const isToday = typeof input.isToday === "boolean" ? input.isToday : current?.isToday ?? false;
 
     if (!title || title.length > 100) {
@@ -272,6 +268,9 @@ export class TodoStore {
     if (parentTaskId && !this.tasks.has(parentTaskId)) {
       throw new ValidationError("Parent task does not exist");
     }
+    if (!Number.isInteger(progress) || progress < 0 || progress > 100) {
+      throw new ValidationError("Progress must be an integer between 0 and 100");
+    }
 
     return {
       title,
@@ -282,6 +281,7 @@ export class TodoStore {
       categoryId,
       parentTaskId,
       firstAction,
+      progress,
       isToday,
     };
   }
