@@ -433,6 +433,80 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 
 - なし。
 
+### 2026-07-29: README画像の最新版差し替え
+
+#### 指示内容
+
+READMEに古い画像が混ざっているため、最新版の画像で揃える。
+
+#### 成果物
+
+- `README.md`
+  - 参照画像を `docs/screenshots/readme-*.png` の最新版セットへ統一。
+- `docs/screenshots/readme-home.png`
+- `docs/screenshots/readme-create-modal.png`
+- `docs/screenshots/readme-first-action-modal.png`
+- `docs/screenshots/readme-today-warning.png`
+- `docs/screenshots/readme-settings-modal.png`
+- `docs/screenshots/readme-today-filter.png`
+- `docs/screenshots/readme-filtered-child-parent-name.png`
+- `docs/screenshots/readme-hierarchy.png`
+- `docs/screenshots/readme-delete-cascade.png`
+- `docs/screenshots/readme-progress-complete.png`
+- `docs/screenshots/readme-completed-category.png`
+
+#### やり直し回数
+
+2回
+
+#### 人間レビューが必要だった箇所
+
+- なし。既存仕様の画面説明に対応する画像を、現在のアプリ画面から撮り直した。
+
+#### テスト結果
+
+- README内の画像リンクがすべて実在することを確認。
+- Playwrightで1366px幅の最新版スクリーンショットを撮影。
+- 代表画像として一覧画面、登録モーダル、削除後状態、今日やる上限警告を目視確認。
+- 撮影のため一時的に変更したインメモリ状態は、`docker compose restart backend frontend` で初期状態へ戻した。
+
+#### テストで落ちた内容
+
+- in-app browserのスクリーンショットでは横幅が切れ、ビューポート固定後も表示が縦詰まりになったため、通常のPlaywrightヘッドレス撮影に切り替えた。
+- 通常のPlaywright初回撮影ではPowerShell経由で日本語パス・日本語ロケータが文字化けしたため、`process.cwd()` とCSSセレクタ中心の操作に変更して成功。
+- 今日やる上限警告画像では一時タスク名が文字化けしたため、タスク追加ではなく `todayTaskLimit` を一時的に下げる方法へ変更して成功。
+
+### 2026-07-29: READMEへの画面の使い方追記
+
+#### 指示内容
+
+READMEに画面の使い方を画像付きで記載する。
+
+#### 成果物
+
+- `README.md`
+  - アプリ概要を追記。
+  - Docker Composeでの起動・停止方法を追記。
+  - 一覧画面、TODO登録、最初の一歩、今日やるTODO、設定、検索・フィルタ、親子タスク、削除、進捗率、完了済み表示の使い方を画像付きで追記。
+  - インメモリ保存であり、再起動時に初期データへ戻る注意を追記。
+  - 主なテスト・ビルドコマンドを追記。
+
+#### やり直し回数
+
+0回
+
+#### 人間レビューが必要だった箇所
+
+- なし。既存仕様と既存スクリーンショットをREADMEへ整理したドキュメント更新として対応した。
+
+#### テスト結果
+
+- README内の画像リンクがすべて実在することを確認。
+
+#### テストで落ちた内容
+
+- なし。コード変更ではないため、フロントエンド/バックエンドのテストは実行していない。
+
 ### 2026-07-29: 削除確認と親削除時の子タスク削除
 
 #### 指示内容
