@@ -1,6 +1,6 @@
 # AIAD 検証ログ
 
-このファイルは、AIAD検証のために作業単位ごとの指示、成果物、レビュー観点、テスト結果、Codex CLI利用状況を記録する。
+このファイルは、AIAD検証のために作業単位ごとの指示、成果物、レビュー観点、テスト結果を記録する。
 
 ## 記録ルール
 
@@ -32,11 +32,6 @@ TODOアプリをCodex CLIで作るため、以下を段階的に実施する。
 - `docs/aiad-log.md`
 - `AGENTS.md`
 
-#### Codex CLI利用状況
-
-- 開始前: この実行環境からCodex CLIの対話コマンド `/status` は直接取得できないため、厳密なトークン数は未取得。
-- 終了後: この実行環境からCodex CLIの対話コマンド `/status` は直接取得できないため、厳密なトークン数は未取得。
-
 #### やり直し回数
 
 0回
@@ -66,13 +61,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 - `frontend/vite.config.ts`
 - `docs/tech-stack.md`
 - `docs/aiad-log.md`
-
-#### Codex CLI利用状況
-
-- 開始前: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
-- 終了後: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
 
 #### やり直し回数
 
@@ -120,13 +108,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
   - カテゴリ設定表示のテストを追加。
 - `docs/screenshots/todo-home.png`
 - `docs/screenshots/todo-modal.png`
-
-#### Codex CLI利用状況
-
-- 開始前: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
-- 終了後: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
 
 #### やり直し回数
 
@@ -178,13 +159,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
   - 階層表示ロジックのテストを追加。
 - `docs/screenshots/todo-hierarchy.png`
 
-#### Codex CLI利用状況
-
-- 開始前: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
-- 終了後: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
-
 #### やり直し回数
 
 1回
@@ -224,13 +198,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
   - 脆弱性対応履歴を追記。
 - `docs/aiad-log.md`
   - 本作業ログを追記。
-
-#### Codex CLI利用状況
-
-- 開始前: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
-- 終了後: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
 
 #### やり直し回数
 
@@ -289,13 +256,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 - `docs/screenshots/todo-warnings-settings.png`
 - `docs/screenshots/todo-today-limit-modal.png`
 
-#### Codex CLI利用状況
-
-- 開始前: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
-- 終了後: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
-
 #### やり直し回数
 
 1回
@@ -344,13 +304,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
   - 「最初の一歩」未設定判定のテストを追加。
 - `docs/screenshots/todo-phase3-first-action.png`
 - `docs/screenshots/todo-phase3-first-action-modal.png`
-
-#### Codex CLI利用状況
-
-- 開始前: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
-- 終了後: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
 
 #### やり直し回数
 
@@ -408,13 +361,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 - `docs/screenshots/todo-progress-input-modal.png`
 - `docs/screenshots/todo-progress-input-list.png`
 
-#### Codex CLI利用状況
-
-- 開始前: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
-- 終了後: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
-
 #### やり直し回数
 
 1回
@@ -466,13 +412,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
   - `今日やるTODOのみ` の表示確認を追加。
 - `docs/screenshots/todo-today-filter.png`
 
-#### Codex CLI利用状況
-
-- 開始前: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
-- 終了後: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
-
 #### やり直し回数
 
 0回
@@ -517,13 +456,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
   - 初期表示では設定フォーム本体が表示されない前提にテストを更新。
 - `docs/screenshots/todo-settings-modal.png`
 
-#### Codex CLI利用状況
-
-- 開始前: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
-- 終了後: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
-
 #### やり直し回数
 
 0回
@@ -565,13 +497,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
   - 作成日の整形helperテストを追加。
 - `docs/screenshots/todo-created-at-visible.png`
 
-#### Codex CLI利用状況
-
-- 開始前: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
-- 終了後: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
-
 #### やり直し回数
 
 0回
@@ -610,13 +535,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 - `backend/src/app.test.ts`
   - 最初の一歩の文言で検索できることを検証するAPIテストを追加。
 - `docs/screenshots/todo-first-action-keyword-search.png`
-
-#### Codex CLI利用状況
-
-- 開始前: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
-- 終了後: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
 
 #### やり直し回数
 
@@ -660,13 +578,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
   - `parentTaskTitle` を受け取り、フィルタ結果内に親タスクがない場合も親タスク名を表示するように変更。
 - `docs/screenshots/todo-filtered-child-parent-name.png`
 
-#### Codex CLI利用状況
-
-- 開始前: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
-- 終了後: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
-
 #### やり直し回数
 
 0回
@@ -707,13 +618,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 - `frontend/src/App.test.tsx`
   - 親がフィルタ結果にない子タスクが子タスクとして扱われることを検証するテストを追加。
 - `docs/screenshots/todo-filtered-child-label.png`
-
-#### Codex CLI利用状況
-
-- 開始前: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
-- 終了後: 厳密なトークン数は取得できなかった。
-  理由: 実行環境からCodex CLIの /status を直接確認できないため。
 
 #### やり直し回数
 
