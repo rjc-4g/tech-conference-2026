@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Task {
+  id              String     @id @default(cuid())
+  title           String
+  description     String?
+  status          TaskStatus @default(todo)
+  priority        Priority   @default(medium)
+  dueDate         DateTime?
+  isToday         Boolean    @default(false)
+
+  parentId        String?
+  parent          Task?      @relation("TaskHierarchy", fields: [parentId], references: [id])
+  children        Task[]     @relation("TaskHierarchy")
+
+  categoryId      String?
+  category        Category?  @relation(fields: [categoryId], references: [id])
+
+  nextAction      String
+  estimateMinutes Int?
+  sortOrder       Int        @default(0)
+
+  startedAt       DateTime?
+  lastWorkedAt    DateTime?
+  completedAt     DateTime?
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  deletedAt       DateTime?
+
+  @@index([status])
+  @@index([dueDate])
+  @@index([isToday])
+  @@index([categoryId])
+  @@index([parentId])
+  @@index([sortOrder])
+  @@index([deletedAt])
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String
+  color     String?
+  sortOrder Int      @default(0)
+
+  tasks     Task[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@index([sortOrder])
+  @@index([deletedAt])
+}
+
+enum TaskStatus {
+  todo
+  done
+}
+
+enum Priority {
+  low
+  medium
+  high
+}
