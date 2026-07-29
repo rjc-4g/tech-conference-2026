@@ -496,6 +496,58 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 
 - なし。
 
+### 2026-07-29: 設定UIのモーダル化
+
+#### 指示内容
+
+今日やる上限と未着手警告の基準を変更する設定は、今日やるTODOの上に設定ボタンを用意し、ボタン押下でその設定画面が出てくるようにする。
+
+#### 成果物
+
+- `docs/design.md`
+  - 今日やるTODOエリアに設定ボタンを置き、押下で設定モーダルを表示する仕様を追記。
+- `frontend/src/App.tsx`
+  - 常設の設定セクションを削除。
+  - 今日やるTODOエリアに設定ボタンを追加。
+  - 設定ボタン押下で、今日やる上限と未着手警告日数の設定モーダルを表示。
+  - 設定保存後にモーダルを閉じるように変更。
+- `frontend/src/App.css`
+  - 今日やるTODOエリア内の設定ボタン配置と設定モーダル用スタイルを追加。
+- `frontend/src/App.test.tsx`
+  - 初期表示では設定フォーム本体が表示されない前提にテストを更新。
+- `docs/screenshots/todo-settings-modal.png`
+
+#### Codex CLI利用状況
+
+- 開始前: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+- 終了後: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+
+#### やり直し回数
+
+0回
+
+#### 人間レビューが必要だった箇所
+
+- なし。既存設定UIの表示位置と表示方法の変更として対応した。
+
+#### テスト結果
+
+- `npm run test:frontend`: 成功。7 tests passed。
+- `npm run test:backend`: 成功。10 tests passed。
+- `docker compose up -d --build`: 成功。
+- Playwright確認:
+  - 今日やるTODOエリアの設定ボタンから設定モーダルが開くことを確認。
+  - 今日やる上限と未着手警告日数の初期値がどちらも `3` と表示されることを確認。
+  - 保存押下で設定モーダルが閉じることを確認。
+- `docker compose exec -T frontend npm run build -w frontend`: 成功。
+- `docker compose exec -T backend npm run build -w backend`: 成功。
+
+#### テストで落ちた内容
+
+- なし。
+
 ### 2026-07-29: TODO一覧への作成日表示追加
 
 #### 指示内容

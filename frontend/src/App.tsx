@@ -91,6 +91,7 @@ function App() {
   const [todayFilter, setTodayFilter] = useState('all')
   const [sort, setSort] = useState('createdAt')
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [form, setForm] = useState<TaskFormState>(emptyForm)
   const [settings, setSettings] = useState<UserSettings>(defaultSettings)
@@ -164,6 +165,11 @@ function App() {
     setEditingTask(null)
     setForm(emptyForm)
     setIsModalOpen(true)
+  }
+
+  function openSettingsModal() {
+    setSettingsForm(settings)
+    setIsSettingsModalOpen(true)
   }
 
   function openEditModal(task: Task) {
@@ -251,6 +257,7 @@ function App() {
     const updatedSettings = await response.json()
     setSettings(updatedSettings)
     setSettingsForm(updatedSettings)
+    setIsSettingsModalOpen(false)
   }
 
   async function updateTaskAction(task: Task, action: 'start' | 'complete' | 'delete') {
@@ -303,12 +310,17 @@ function App() {
       {error && <p className="error-banner">{error}</p>}
 
       <section className="today-band" aria-labelledby="today-title">
-        <div>
-          <h2 id="today-title">今日やるTODO</h2>
-          <p>{todayTasks.length}件 / 推奨上限 {settings.todayTaskLimit}件</p>
-          {isTodayOverLimit && (
-            <p className="limit-warning">上限を{todayTasks.length - settings.todayTaskLimit}件超過しています。</p>
-          )}
+        <div className="today-summary">
+          <div>
+            <h2 id="today-title">今日やるTODO</h2>
+            <p>{todayTasks.length}件 / 推奨上限 {settings.todayTaskLimit}件</p>
+            {isTodayOverLimit && (
+              <p className="limit-warning">上限を{todayTasks.length - settings.todayTaskLimit}件超過しています。</p>
+            )}
+          </div>
+          <button type="button" onClick={openSettingsModal}>
+            設定
+          </button>
         </div>
         <div className="today-list">
           {todayTasks.length === 0 ? (
@@ -383,40 +395,6 @@ function App() {
             aria-label="カテゴリ色"
           />
           <button type="submit">追加</button>
-        </form>
-      </section>
-
-      <section className="settings-panel" aria-labelledby="settings-title">
-        <div>
-          <h2 id="settings-title">設定</h2>
-          <p>今日やる上限と未着手警告の基準を変更できます。</p>
-        </div>
-        <form className="settings-form" onSubmit={saveSettings}>
-          <label>
-            今日やる上限
-            <input
-              type="number"
-              min={1}
-              max={20}
-              value={settingsForm.todayTaskLimit}
-              onChange={(event) =>
-                setSettingsForm({ ...settingsForm, todayTaskLimit: Number(event.target.value) })
-              }
-            />
-          </label>
-          <label>
-            未着手警告日数
-            <input
-              type="number"
-              min={1}
-              max={30}
-              value={settingsForm.staleTaskDays}
-              onChange={(event) =>
-                setSettingsForm({ ...settingsForm, staleTaskDays: Number(event.target.value) })
-              }
-            />
-          </label>
-          <button type="submit">保存</button>
         </form>
       </section>
 
@@ -638,6 +616,54 @@ function App() {
             )}
             <div className="modal-actions">
               <button type="button" onClick={() => setIsModalOpen(false)}>
+                キャンセル
+              </button>
+              <button type="submit" className="primary-button">
+                保存
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {isSettingsModalOpen && (
+        <div className="modal-backdrop" role="presentation">
+          <form className="modal settings-modal" onSubmit={saveSettings} aria-label="設定">
+            <div className="modal-header">
+              <h2>設定</h2>
+              <button type="button" aria-label="閉じる" onClick={() => setIsSettingsModalOpen(false)}>
+                x
+              </button>
+            </div>
+            <p className="modal-note">今日やる上限と未着手警告の基準を変更できます。</p>
+            <div className="settings-form">
+              <label>
+                今日やる上限
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={settingsForm.todayTaskLimit}
+                  onChange={(event) =>
+                    setSettingsForm({ ...settingsForm, todayTaskLimit: Number(event.target.value) })
+                  }
+                />
+              </label>
+              <label>
+                未着手警告日数
+                <input
+                  type="number"
+                  min={1}
+                  max={30}
+                  value={settingsForm.staleTaskDays}
+                  onChange={(event) =>
+                    setSettingsForm({ ...settingsForm, staleTaskDays: Number(event.target.value) })
+                  }
+                />
+              </label>
+            </div>
+            <div className="modal-actions">
+              <button type="button" onClick={() => setIsSettingsModalOpen(false)}>
                 キャンセル
               </button>
               <button type="submit" className="primary-button">

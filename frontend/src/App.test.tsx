@@ -18,10 +18,11 @@ describe('App', () => {
     expect(html).toContain('今日やるTODO')
     expect(html).toContain('カテゴリ設定')
     expect(html).toContain('設定')
-    expect(html).toContain('今日やる上限')
+    expect(html).toContain('推奨上限')
     expect(html).toContain('今日やるTODOのみ')
     expect(html).toContain('キーワード検索')
     expect(html).toContain('新規登録')
+    expect(html).not.toContain('未着手警告日数')
   })
 
   it('places child tasks directly after their parent with depth metadata', () => {
