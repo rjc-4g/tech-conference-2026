@@ -275,3 +275,76 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 
 - 1回目の `npm update postcss -w frontend` はsandbox内で `ENOTCACHED` により失敗。
   - 対応: registryアクセスが必要なため、権限付きで再実行して成功。
+
+### 2026-07-29: 設定UI・警告機能の実装
+
+#### 指示内容
+
+未実装または不十分だった以下を進める。
+
+- 完了済み親タスクに未完了子タスクがある場合の確認
+- 期限切れタスクの明示表示
+- 今日やるTODO上限超過時の警告
+- 設定画面または設定UI
+  - `todayTaskLimit`
+  - `staleTaskDays`
+
+#### 成果物
+
+- `frontend/src/App.tsx`
+  - `/api/settings` の読み込み・保存処理を追加。
+  - 設定UIを一覧画面へ追加。
+  - 今日やるTODO件数が `todayTaskLimit` を超えた場合の警告表示を追加。
+  - 登録・編集モーダルで今日やるTODO上限超過の事前警告を追加。
+  - 期限切れタスク表示を追加。
+  - `staleTaskDays` 以上未着手のタスク警告を追加。
+  - 未完了子タスクがある親タスクを完了する際の確認ダイアログを追加。
+- `frontend/src/App.css`
+  - 設定UI、上限警告、期限切れ、未着手警告のスタイルを追加。
+- `backend/src/store.ts`
+  - 期限切れ・未着手警告を初期表示で確認できる検証用タスクを追加。
+- `backend/src/app.test.ts`
+  - settings APIの更新・バリデーションテストを追加。
+- `frontend/src/App.test.tsx`
+  - 期限切れ判定、未着手判定、今日やる上限計算、未完了子タスク判定のテストを追加。
+- `docs/screenshots/todo-warnings-settings.png`
+- `docs/screenshots/todo-today-limit-modal.png`
+
+#### Codex CLI利用状況
+
+- 開始前: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+- 終了後: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+
+#### やり直し回数
+
+1回
+
+#### 人間レビューが必要だった箇所
+
+- なし。設計書に記載済みのPhase 2/3項目として実装した。
+
+#### Cursorレビュー指摘
+
+未実施。
+
+#### テスト結果
+
+- `npm run test:backend`: 成功。6 tests passed。
+- `npm run test:frontend`: 成功。4 tests passed。
+- `docker compose up -d --build`: 成功。
+- `http://localhost:5173/api/tasks`: 200。
+- Playwright確認:
+  - 親タスク完了時確認ダイアログ: `未完了の子タスクが1件あります。親タスクを完了しますか？` を確認。
+  - 今日やるTODO上限超過警告: 1件表示を確認。
+  - 期限切れ表示: 1件表示を確認。
+  - 未着手警告: 1件表示を確認。
+- `docker compose exec -T frontend npm run build -w frontend`: 成功。
+- `docker compose exec -T backend npm run build -w backend`: 成功。
+
+#### テストで落ちた内容
+
+- `npm run build`: 失敗。
+  - 内容: Windowsホスト上のfrontend Vite production buildが `transforming...` 後に終了コード `3221226505` で異常終了した。
+  - 対応方針: 既知のホスト側Vite build問題として扱い、Dockerコンテナ内のfrontend/backend build成功で検証した。

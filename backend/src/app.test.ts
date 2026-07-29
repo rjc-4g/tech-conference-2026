@@ -15,7 +15,7 @@ describe("tasks api", () => {
   it("lists seeded tasks with progress", async () => {
     const response = await request(app).get("/api/tasks").expect(200);
 
-    expect(response.body).toHaveLength(3);
+    expect(response.body).toHaveLength(4);
     expect(response.body[0]).toHaveProperty("progress");
   });
 
@@ -104,5 +104,21 @@ describe("tasks api", () => {
       .expect(201);
 
     expect(task.body.categoryId).toBe(category.body.id);
+  });
+
+  it("updates settings and rejects invalid values", async () => {
+    const updated = await request(app)
+      .put("/api/settings")
+      .send({ todayTaskLimit: 5, staleTaskDays: 7 })
+      .expect(200);
+
+    expect(updated.body).toEqual({ todayTaskLimit: 5, staleTaskDays: 7 });
+
+    const response = await request(app)
+      .put("/api/settings")
+      .send({ todayTaskLimit: 0, staleTaskDays: 7 })
+      .expect(400);
+
+    expect(response.body.message).toContain("todayTaskLimit");
   });
 });

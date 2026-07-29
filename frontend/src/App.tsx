@@ -16,6 +16,10 @@ type Task = {
   parentTaskId?: string
   firstAction?: string
   isToday: boolean
+  startedAt?: string
+  completedAt?: string
+  createdAt: string
+  updatedAt: string
   progress: number
 }
 
@@ -23,6 +27,11 @@ type HierarchyTask = Task & {
   depth: number
   childCount: number
   completedChildCount: number
+}
+
+type UserSettings = {
+  todayTaskLimit: number
+  staleTaskDays: number
 }
 
 type Category = {
@@ -53,6 +62,11 @@ const emptyForm: TaskFormState = {
   firstAction: '',
 }
 
+const defaultSettings: UserSettings = {
+  todayTaskLimit: 3,
+  staleTaskDays: 3,
+}
+
 const statusLabels: Record<TaskStatus, string> = {
   todo: '未着手',
   in_progress: '着手中',
@@ -75,6 +89,8 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [form, setForm] = useState<TaskFormState>(emptyForm)
+  const [settings, setSettings] = useState<UserSettings>(defaultSettings)
+  const [settingsForm, setSettingsForm] = useState<UserSettings>(defaultSettings)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [newCategoryColor, setNewCategoryColor] = useState('#2563eb')
   const [error, setError] = useState('')
@@ -85,6 +101,9 @@ function App() {
     [tasks],
   )
   const visibleTasks = useMemo(() => buildTaskHierarchy(tasks), [tasks])
+  const isTodayOverLimit = todayTasks.length > settings.todayTaskLimit
+  const modalTodayCount = getNextTodayTaskCount(tasks, form.isToday, editingTask)
+  const willExceedTodayLimit = form.isToday && modalTodayCount > settings.todayTaskLimit
 
   useEffect(() => {
     void loadInitialData()
@@ -94,15 +113,19 @@ function App() {
     setIsLoading(true)
     setError('')
     try {
-      const [taskResponse, categoryResponse] = await Promise.all([
+      const [taskResponse, categoryResponse, settingsResponse] = await Promise.all([
         fetch('/api/tasks'),
         fetch('/api/categories'),
+        fetch('/api/settings'),
       ])
-      if (!taskResponse.ok || !categoryResponse.ok) {
+      if (!taskResponse.ok || !categoryResponse.ok || !settingsResponse.ok) {
         throw new Error('API request failed')
       }
       setTasks(await taskResponse.json())
       setCategories(await categoryResponse.json())
+      const loadedSettings = await settingsResponse.json()
+      setSettings(loadedSettings)
+      setSettingsForm(loadedSettings)
     } catch {
       setError('APIに接続できません。backend を起動してください。')
     } finally {
@@ -202,7 +225,40 @@ function App() {
     setNewCategoryColor('#2563eb')
   }
 
+  async function saveSettings(event: FormEvent) {
+    event.preventDefault()
+    setError('')
+
+    const response = await fetch('/api/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settingsForm),
+    })
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => null)
+      setError(body?.message ?? '設定の保存に失敗しました。')
+      return
+    }
+
+    const updatedSettings = await response.json()
+    setSettings(updatedSettings)
+    setSettingsForm(updatedSettings)
+  }
+
   async function updateTaskAction(task: Task, action: 'start' | 'complete' | 'delete') {
+    if (action === 'complete') {
+      const incompleteChildren = getIncompleteChildren(tasks, task.id)
+      if (incompleteChildren.length > 0) {
+        const confirmed = window.confirm(
+          `未完了の子タスクが${incompleteChildren.length}件あります。親タスクを完了しますか？`,
+        )
+        if (!confirmed) {
+          return
+        }
+      }
+    }
+
     const method = action === 'delete' ? 'DELETE' : 'PATCH'
     const path = action === 'delete' ? `/api/tasks/${task.id}` : `/api/tasks/${task.id}/${action}`
     const response = await fetch(path, { method })
@@ -239,7 +295,10 @@ function App() {
       <section className="today-band" aria-labelledby="today-title">
         <div>
           <h2 id="today-title">今日やるTODO</h2>
-          <p>{todayTasks.length}件 / 推奨上限 3件</p>
+          <p>{todayTasks.length}件 / 推奨上限 {settings.todayTaskLimit}件</p>
+          {isTodayOverLimit && (
+            <p className="limit-warning">上限を{todayTasks.length - settings.todayTaskLimit}件超過しています。</p>
+          )}
         </div>
         <div className="today-list">
           {todayTasks.length === 0 ? (
@@ -308,6 +367,40 @@ function App() {
         </form>
       </section>
 
+      <section className="settings-panel" aria-labelledby="settings-title">
+        <div>
+          <h2 id="settings-title">設定</h2>
+          <p>今日やる上限と未着手警告の基準を変更できます。</p>
+        </div>
+        <form className="settings-form" onSubmit={saveSettings}>
+          <label>
+            今日やる上限
+            <input
+              type="number"
+              min={1}
+              max={20}
+              value={settingsForm.todayTaskLimit}
+              onChange={(event) =>
+                setSettingsForm({ ...settingsForm, todayTaskLimit: Number(event.target.value) })
+              }
+            />
+          </label>
+          <label>
+            未着手警告日数
+            <input
+              type="number"
+              min={1}
+              max={30}
+              value={settingsForm.staleTaskDays}
+              onChange={(event) =>
+                setSettingsForm({ ...settingsForm, staleTaskDays: Number(event.target.value) })
+              }
+            />
+          </label>
+          <button type="submit">保存</button>
+        </form>
+      </section>
+
       <section className="task-list" aria-label="タスク一覧">
         {isLoading ? (
           <p className="empty-state">読み込み中...</p>
@@ -338,6 +431,12 @@ function App() {
                     )}
                   </div>
                   <h2>{task.title}</h2>
+                  <div className="task-alerts">
+                    {isOverdue(task) && <span className="task-alert overdue">期限切れ</span>}
+                    {isStaleTask(task, settings.staleTaskDays) && (
+                      <span className="task-alert stale">未着手 {settings.staleTaskDays}日以上</span>
+                    )}
+                  </div>
                   {task.description && <p>{task.description}</p>}
                 </div>
                 <span className={`priority ${task.priority}`}>優先度 {priorityLabels[task.priority]}</span>
@@ -487,6 +586,11 @@ function App() {
               />
               今日やるTODOにする
             </label>
+            {willExceedTodayLimit && (
+              <p className="form-warning">
+                保存すると今日やるTODOが推奨上限を超えます。登録はできます。
+              </p>
+            )}
             <div className="modal-actions">
               <button type="button" onClick={() => setIsModalOpen(false)}>
                 キャンセル
@@ -546,6 +650,51 @@ export function buildTaskHierarchy(tasks: Task[]): HierarchyTask[] {
   }
 
   return result
+}
+
+export function isOverdue(task: Pick<Task, 'dueDate' | 'status'>, today = getLocalDateString()) {
+  return Boolean(task.dueDate && task.dueDate < today && task.status !== 'done')
+}
+
+export function isStaleTask(
+  task: Pick<Task, 'createdAt' | 'startedAt' | 'status'>,
+  staleTaskDays: number,
+  now = new Date(),
+) {
+  if (task.status !== 'todo' || task.startedAt) {
+    return false
+  }
+  const createdAt = new Date(task.createdAt)
+  if (Number.isNaN(createdAt.getTime())) {
+    return false
+  }
+
+  const elapsedMs = now.getTime() - createdAt.getTime()
+  return elapsedMs >= staleTaskDays * 24 * 60 * 60 * 1000
+}
+
+export function getNextTodayTaskCount(tasks: Task[], nextIsToday: boolean, editingTask: Task | null) {
+  const currentCount = tasks.filter((task) => task.isToday && task.status !== 'done').length
+  const editingWasToday = Boolean(editingTask?.isToday && editingTask.status !== 'done')
+
+  if (nextIsToday && !editingWasToday) {
+    return currentCount + 1
+  }
+  if (!nextIsToday && editingWasToday) {
+    return currentCount - 1
+  }
+  return currentCount
+}
+
+export function getIncompleteChildren(tasks: Task[], parentTaskId: string) {
+  return tasks.filter((task) => task.parentTaskId === parentTaskId && task.status !== 'done')
+}
+
+function getLocalDateString(date = new Date()) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 export default App

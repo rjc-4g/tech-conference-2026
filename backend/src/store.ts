@@ -346,5 +346,20 @@ export class TodoStore {
       categoryId: work.id,
       isToday: true,
     });
+    const oldDate = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString();
+    const overdue = this.createTask({
+      title: "支払い期限を確認する",
+      description: "期限が過ぎていないか請求書を確認する",
+      priority: "high",
+      dueDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+      categoryId: personal.id,
+      isToday: false,
+      firstAction: "請求書フォルダを開く",
+    });
+    this.tasks.set(overdue.id, {
+      ...overdue,
+      createdAt: oldDate,
+      updatedAt: oldDate,
+    });
   }
 }
