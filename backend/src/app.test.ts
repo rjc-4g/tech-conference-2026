@@ -15,7 +15,7 @@ describe("tasks api", () => {
   it("lists seeded tasks with progress", async () => {
     const response = await request(app).get("/api/tasks").expect(200);
 
-    expect(response.body).toHaveLength(2);
+    expect(response.body).toHaveLength(3);
     expect(response.body[0]).toHaveProperty("progress");
   });
 

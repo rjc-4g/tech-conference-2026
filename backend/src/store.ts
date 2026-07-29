@@ -322,13 +322,23 @@ export class TodoStore {
     const personal = this.createCategory({ name: "個人", color: "#0ea5e9" });
     const work = this.createCategory({ name: "仕事", color: "#22c55e" });
 
-    this.createTask({
+    const shopping = this.createTask({
       title: "買い物リストを作る",
       description: "夕食に必要な材料を確認する",
       priority: "medium",
       dueDate: new Date().toISOString().slice(0, 10),
       categoryId: personal.id,
       isToday: true,
+    });
+    this.createTask({
+      title: "冷蔵庫の中身を確認する",
+      description: "買う必要がある材料を洗い出す",
+      priority: "low",
+      dueDate: new Date().toISOString().slice(0, 10),
+      categoryId: personal.id,
+      parentTaskId: shopping.id,
+      isToday: false,
+      firstAction: "冷蔵庫を開いて不足食材を3つメモする",
     });
     this.createTask({
       title: "週次レポートを下書きする",

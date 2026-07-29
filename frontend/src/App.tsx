@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { FormEvent } from 'react'
+import type { CSSProperties, FormEvent } from 'react'
 import './App.css'
 
 type TaskStatus = 'todo' | 'in_progress' | 'done'
@@ -17,6 +17,12 @@ type Task = {
   firstAction?: string
   isToday: boolean
   progress: number
+}
+
+type HierarchyTask = Task & {
+  depth: number
+  childCount: number
+  completedChildCount: number
 }
 
 type Category = {
@@ -78,6 +84,7 @@ function App() {
     () => tasks.filter((task) => task.isToday && task.status !== 'done'),
     [tasks],
   )
+  const visibleTasks = useMemo(() => buildTaskHierarchy(tasks), [tasks])
 
   useEffect(() => {
     void loadInitialData()
@@ -307,10 +314,29 @@ function App() {
         ) : tasks.length === 0 ? (
           <p className="empty-state">タスクがありません。</p>
         ) : (
-          tasks.map((task) => (
-            <article key={task.id} className={task.status === 'done' ? 'task done' : 'task'}>
+          visibleTasks.map((task) => (
+            <article
+              key={task.id}
+              className={[
+                task.status === 'done' ? 'task done' : 'task',
+                task.depth > 0 ? 'child-task' : 'parent-task',
+              ].join(' ')}
+              style={{ '--task-depth': task.depth } as CSSProperties & Record<'--task-depth', number>}
+            >
               <div className="task-main">
                 <div>
+                  <div className="relationship-row">
+                    {task.depth === 0 ? (
+                      <span className="relationship-badge parent-badge">
+                        親タスク
+                        {task.childCount > 0 && ` / 子 ${task.completedChildCount}/${task.childCount}`}
+                      </span>
+                    ) : (
+                      <span className="relationship-badge child-badge">
+                        子タスク / 親: {parentTaskTitle(task.parentTaskId)}
+                      </span>
+                    )}
+                  </div>
                   <h2>{task.title}</h2>
                   {task.description && <p>{task.description}</p>}
                 </div>
@@ -331,7 +357,7 @@ function App() {
                 </div>
                 <div>
                   <dt>親タスク</dt>
-                  <dd>{parentTaskTitle(task.parentTaskId)}</dd>
+                  <dd>{task.depth === 0 ? `${task.childCount}件の子タスク` : parentTaskTitle(task.parentTaskId)}</dd>
                 </div>
                 <div>
                   <dt>進捗</dt>
@@ -474,6 +500,52 @@ function App() {
       )}
     </main>
   )
+}
+
+export function buildTaskHierarchy(tasks: Task[]): HierarchyTask[] {
+  const byParent = new Map<string, Task[]>()
+  const byId = new Map(tasks.map((task) => [task.id, task]))
+
+  for (const task of tasks) {
+    if (!task.parentTaskId || !byId.has(task.parentTaskId)) {
+      continue
+    }
+    byParent.set(task.parentTaskId, [...(byParent.get(task.parentTaskId) ?? []), task])
+  }
+
+  const childIds = new Set(tasks.filter((task) => task.parentTaskId).map((task) => task.id))
+  const roots = tasks.filter((task) => !childIds.has(task.id))
+  const result: HierarchyTask[] = []
+  const visited = new Set<string>()
+
+  function append(task: Task, depth: number) {
+    if (visited.has(task.id)) {
+      return
+    }
+    visited.add(task.id)
+
+    const children = byParent.get(task.id) ?? []
+    result.push({
+      ...task,
+      depth,
+      childCount: children.length,
+      completedChildCount: children.filter((child) => child.status === 'done').length,
+    })
+
+    for (const child of children) {
+      append(child, depth + 1)
+    }
+  }
+
+  for (const root of roots) {
+    append(root, 0)
+  }
+
+  for (const task of tasks) {
+    append(task, 0)
+  }
+
+  return result
 }
 
 export default App

@@ -167,3 +167,111 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 - インアプリブラウザは `iab` が利用不可だったため、通常のPlaywright CLI / Node実行で画面キャプチャを取得した。
 - 初回のPlaywrightスクリーンショット取得はブラウザ実体が未インストールで失敗した。
   - 対応: `npx playwright install chromium` を実行し、再取得に成功した。
+
+### 2026-07-29: 親子関係の視認性改善
+
+#### 指示内容
+
+タスク一覧で親タスクと子タスクの関係がパッと見でわかりづらいため、表示を改善する。
+
+#### 成果物
+
+- `frontend/src/App.tsx`
+  - タスク一覧を親タスクの直下に子タスクを並べる階層表示に変更。
+  - 親タスクには子タスク件数と完了数を表示。
+  - 子タスクには親タスク名をバッジ表示。
+  - 階層表示ロジック `buildTaskHierarchy` を追加。
+- `frontend/src/App.css`
+  - 親タスクと子タスクで左線の色、背景色、インデントを変えるスタイルを追加。
+- `backend/src/store.ts`
+  - 初期データに親子関係を確認できる子タスクを追加。
+- `backend/src/app.test.ts`
+  - 初期タスク件数の期待値を更新。
+- `frontend/src/App.test.tsx`
+  - 階層表示ロジックのテストを追加。
+- `docs/screenshots/todo-hierarchy.png`
+
+#### Codex CLI利用状況
+
+- 開始前: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+- 終了後: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+
+#### やり直し回数
+
+1回
+
+#### 人間レビューが必要だった箇所
+
+- なし。Phase 2の「タスクの階層化」「進捗バー」の表示改善範囲として実装した。
+
+#### Cursorレビュー指摘
+
+未実施。
+
+#### テスト結果
+
+- `npm run test:backend`: 成功。5 tests passed。
+- `npm run test:frontend`: 成功。2 tests passed。
+- `docker compose up -d --build`: 成功。
+- `docs/screenshots/todo-hierarchy.png`: 取得成功。
+- `docker compose exec -T frontend npm run build -w frontend`: 成功。
+- `docker compose exec -T backend npm run build -w backend`: 成功。
+
+#### テストで落ちた内容
+
+- 1回目の `todo-hierarchy.png` はタスク読み込み前の状態で取得された。
+  - 対応: Playwrightで子タスク名の表示を待ってから再取得した。
+- `docker compose up -d --build` の `npm ci` で high severity vulnerability が1件報告された。
+  - 対応方針: AGENTS.mdの「実装中に勝手にライブラリを追加・更新しない」に従い、`npm audit fix` は実行せず記録に留める。
+
+### 2026-07-29: high severity vulnerability解消
+
+#### 指示内容
+
+ユーザーがhigh severity vulnerabilityを確認し、対象ライブラリ更新を承認したため、high severity vulnerabilityを解消する。
+
+#### 成果物
+
+- `package-lock.json`
+  - Vite経由の間接依存 `postcss` を `8.5.15` から `8.5.24` に更新。
+  - postcss更新に伴い `nanoid` を `3.3.15` から `3.3.16` に更新。
+- `docs/tech-stack.md`
+  - 脆弱性対応履歴を追記。
+- `docs/aiad-log.md`
+  - 本作業ログを追記。
+
+#### Codex CLI利用状況
+
+- 開始前: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+- 終了後: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+
+#### やり直し回数
+
+1回
+
+#### 人間レビューが必要だった箇所
+
+- ライブラリ更新が必要なため、ユーザー承認を受けてから実施した。
+
+#### Cursorレビュー指摘
+
+未実施。
+
+#### テスト結果
+
+- `npm audit --json`: 成功。high 0件、total 0件。
+- `docker compose exec -T frontend npm audit --json`: 成功。high 0件、total 0件。
+- `npm run test:backend`: 成功。5 tests passed。
+- `npm run test:frontend`: 成功。2 tests passed。
+- `docker compose up -d --build`: 成功。`npm ci` 出力で `found 0 vulnerabilities` を確認。
+- `docker compose exec -T frontend npm run build -w frontend`: 成功。
+- `docker compose exec -T backend npm run build -w backend`: 成功。
+
+#### テストで落ちた内容
+
+- 1回目の `npm update postcss -w frontend` はsandbox内で `ENOTCACHED` により失敗。
+  - 対応: registryアクセスが必要なため、権限付きで再実行して成功。

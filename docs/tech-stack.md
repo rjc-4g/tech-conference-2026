@@ -155,3 +155,10 @@ npm run build
 | backend | tsx | ^4.22.4 | `backend/package.json` |
 | backend | Vitest | ^4.1.9 | `backend/package.json` |
 | backend | Supertest | ^7.2.2 | `backend/package.json` |
+
+## 脆弱性対応履歴
+
+| 日付 | 対象 | 変更内容 | 確認元 |
+| --- | --- | --- | --- |
+| 2026-07-29 | postcss | `8.5.15` から `8.5.24` に更新し、high severity vulnerabilityを解消 | `package-lock.json` |
+| 2026-07-29 | nanoid | postcss更新に伴い `3.3.15` から `3.3.16` に更新 | `package-lock.json` |

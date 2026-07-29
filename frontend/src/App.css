@@ -381,15 +381,35 @@ button:hover {
 }
 
 .task {
+  position: relative;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 18px;
   background: #ffffff;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  margin-left: calc(var(--task-depth, 0) * 34px);
 }
 
 .task.done {
   opacity: 0.72;
+}
+
+.parent-task {
+  border-left: 5px solid #0f766e;
+}
+
+.child-task {
+  border-left: 5px solid #7c3aed;
+  background: #fbfaff;
+}
+
+.child-task::before {
+  content: '';
+  position: absolute;
+  left: -28px;
+  top: 32px;
+  width: 22px;
+  border-top: 2px solid #c4b5fd;
 }
 
 .task-main {
@@ -402,6 +422,33 @@ button:hover {
 
 .task-main h2 {
   font-size: 20px;
+}
+
+.relationship-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.relationship-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.parent-badge {
+  color: #115e59;
+  background: #ccfbf1;
+}
+
+.child-badge {
+  color: #5b21b6;
+  background: #ede9fe;
 }
 
 .priority {
@@ -571,6 +618,15 @@ button:hover {
   .task-meta,
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .task {
+    margin-left: calc(var(--task-depth, 0) * 18px);
+  }
+
+  .child-task::before {
+    left: -14px;
+    width: 10px;
   }
 
   .category-form {
