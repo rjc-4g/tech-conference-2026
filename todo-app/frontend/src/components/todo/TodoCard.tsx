@@ -42,7 +42,6 @@ export function TodoCard({ todo, childrenTodos = [], onToggleComplete, onEdit, o
                 {overdue ? "期限切れ：" : "期限："}{todo.dueDate}
               </span>
             )}
-            {todo.isToday && <span className="badge">今日やる</span>}
           </div>
 
           {todo.description && <p className="todo-meta">{todo.description}</p>}

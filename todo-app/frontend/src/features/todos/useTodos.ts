@@ -8,8 +8,6 @@ export function useTodos() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchText, setSearchText] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
-  const [showTodayOnly, setShowTodayOnly] = useState(false);
-  const [showOverdueOnly, setShowOverdueOnly] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
@@ -31,23 +29,34 @@ export function useTodos() {
   }, []);
 
   const filteredTodos = useMemo(() => {
-    return todos.filter((todo) => {
-      const keyword = searchText.trim().toLowerCase();
-      const matchesKeyword =
-        !keyword ||
-        todo.title.toLowerCase().includes(keyword) ||
-        (todo.description ?? "").toLowerCase().includes(keyword) ||
-        (todo.category?.name ?? "").toLowerCase().includes(keyword);
+  return todos.filter((todo) => {
+    const keyword = searchText.trim().toLowerCase();
 
-      const matchesCategory =
-        !selectedCategoryId || String(todo.category?.id ?? todo.categoryId ?? "") === selectedCategoryId;
+    const matchesKeyword =
+      !keyword ||
+      todo.title.toLowerCase().includes(keyword) ||
+      (todo.description ?? "")
+        .toLowerCase()
+        .includes(keyword) ||
+      (todo.category?.name ?? "")
+        .toLowerCase()
+        .includes(keyword);
 
-      const matchesToday = !showTodayOnly || todo.isToday;
-      const matchesOverdue = !showOverdueOnly || isOverdue(todo.dueDate, todo.isCompleted);
+    const matchesCategory =
+      !selectedCategoryId ||
+      String(
+        todo.category?.id ??
+          todo.categoryId ??
+          ""
+      ) === selectedCategoryId;
 
-      return matchesKeyword && matchesCategory && matchesToday && matchesOverdue;
-    });
-  }, [todos, searchText, selectedCategoryId, showTodayOnly, showOverdueOnly]);
+    return matchesKeyword && matchesCategory;
+  });
+}, [
+  todos,
+  searchText,
+  selectedCategoryId
+]);
 
   const createTodo = async (request: TodoRequest) => {
     await todoApi.createTodo(request);
@@ -69,22 +78,29 @@ export function useTodos() {
     await load();
   };
 
+  const reorderTodos = async (
+  items: Array<{
+    id: number;
+    sortOrder: number;
+  }>
+) => {
+  await todoApi.reorderTodos(items);
+  await load();
+};
+
   return {
-    todos,
-    categories,
-    filteredTodos,
-    searchText,
-    selectedCategoryId,
-    showTodayOnly,
-    showOverdueOnly,
-    loading,
-    setSearchText,
-    setSelectedCategoryId,
-    setShowTodayOnly,
-    setShowOverdueOnly,
-    createTodo,
-    updateTodo,
-    deleteTodo,
-    toggleComplete
-  };
+  todos,
+  categories,
+  filteredTodos,
+  searchText,
+  selectedCategoryId,
+  loading,
+  setSearchText,
+  setSelectedCategoryId,
+  createTodo,
+  updateTodo,
+  deleteTodo,
+  toggleComplete,
+  reorderTodos
+};
 }

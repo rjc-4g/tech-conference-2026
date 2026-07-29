@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import type { Category, Priority, Todo, TodoRequest } from "../../types/todo";
+import type {
+  Category,
+  Priority,
+  Todo,
+  TodoRequest
+} from "../../types/todo";
 
 type Props = {
   open: boolean;
@@ -11,23 +16,44 @@ type Props = {
   onSubmit: (request: TodoRequest) => Promise<void>;
 };
 
-const initialForm: TodoRequest = {
+/**
+ * ローカル日時をYYYY-MM-DD形式で返す。
+ * toISOString()はUTC基準になるため使用しない。
+ */
+const getTodayDate = (): string => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
+const createInitialForm = (): TodoRequest => ({
   title: "",
   description: "",
   categoryId: null,
   parentId: null,
   priority: "medium",
-  dueDate: "",
-  isToday: false,
+  dueDate: getTodayDate(),
+  isToday: true,
   isCompleted: false,
   progress: 0,
   firstAction: "",
   sortOrder: 0
-};
+});
 
-export function TodoFormModal({ open, title, todo, todos, categories, onClose, onSubmit }: Props) {
-  const [form, setForm] = useState<TodoRequest>(initialForm);
-  const [error, setError] = useState<string>("");
+export function TodoFormModal({
+  open,
+  title,
+  todo,
+  todos,
+  categories,
+  onClose,
+  onSubmit
+}: Props) {
+  const [form, setForm] = useState<TodoRequest>(createInitialForm);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!open) {
@@ -41,15 +67,15 @@ export function TodoFormModal({ open, title, todo, todos, categories, onClose, o
         categoryId: todo.category?.id ?? todo.categoryId ?? null,
         parentId: todo.parentId ?? null,
         priority: todo.priority,
-        dueDate: todo.dueDate ?? "",
-        isToday: todo.isToday,
+        dueDate: todo.dueDate ?? getTodayDate(),
+        isToday: true,
         isCompleted: todo.isCompleted,
         progress: todo.progress,
         firstAction: todo.firstAction ?? "",
         sortOrder: todo.sortOrder
       });
     } else {
-      setForm(initialForm);
+      setForm(createInitialForm());
     }
 
     setError("");
@@ -59,8 +85,14 @@ export function TodoFormModal({ open, title, todo, todos, categories, onClose, o
     return null;
   }
 
-  const update = <K extends keyof TodoRequest>(key: K, value: TodoRequest[K]) => {
-    setForm((current) => ({ ...current, [key]: value }));
+  const update = <K extends keyof TodoRequest>(
+    key: K,
+    value: TodoRequest[K]
+  ) => {
+    setForm((current) => ({
+      ...current,
+      [key]: value
+    }));
   };
 
   const handleSubmit = async () => {
@@ -81,7 +113,8 @@ export function TodoFormModal({ open, title, todo, todos, categories, onClose, o
       firstAction: form.firstAction?.trim(),
       categoryId: form.categoryId || null,
       parentId: form.parentId || null,
-      dueDate: form.dueDate || null
+      dueDate: form.dueDate || getTodayDate(),
+      isToday: true
     });
   };
 
@@ -93,14 +126,21 @@ export function TodoFormModal({ open, title, todo, todos, categories, onClose, o
         <div className="form-grid">
           <label className="form-field">
             タスク名
-            <input value={form.title} onChange={(event) => update("title", event.target.value)} />
+            <input
+              value={form.title}
+              onChange={(event) =>
+                update("title", event.target.value)
+              }
+            />
           </label>
 
           <label className="form-field">
             説明
             <textarea
               value={form.description}
-              onChange={(event) => update("description", event.target.value)}
+              onChange={(event) =>
+                update("description", event.target.value)
+              }
             />
           </label>
 
@@ -109,12 +149,21 @@ export function TodoFormModal({ open, title, todo, todos, categories, onClose, o
             <select
               value={form.categoryId ?? ""}
               onChange={(event) =>
-                update("categoryId", event.target.value ? Number(event.target.value) : null)
+                update(
+                  "categoryId",
+                  event.target.value
+                    ? Number(event.target.value)
+                    : null
+                )
               }
             >
               <option value="">未分類</option>
+
               {categories.map((category) => (
-                <option key={category.id} value={category.id}>
+                <option
+                  key={category.id}
+                  value={category.id}
+                >
                   {category.name}
                 </option>
               ))}
@@ -126,14 +175,26 @@ export function TodoFormModal({ open, title, todo, todos, categories, onClose, o
             <select
               value={form.parentId ?? ""}
               onChange={(event) =>
-                update("parentId", event.target.value ? Number(event.target.value) : null)
+                update(
+                  "parentId",
+                  event.target.value
+                    ? Number(event.target.value)
+                    : null
+                )
               }
             >
               <option value="">なし</option>
+
               {todos
-                .filter((candidate) => candidate.id !== todo?.id)
+                .filter(
+                  (candidate) =>
+                    candidate.id !== todo?.id
+                )
                 .map((candidate) => (
-                  <option key={candidate.id} value={candidate.id}>
+                  <option
+                    key={candidate.id}
+                    value={candidate.id}
+                  >
                     {candidate.title}
                   </option>
                 ))}
@@ -142,7 +203,15 @@ export function TodoFormModal({ open, title, todo, todos, categories, onClose, o
 
           <label className="form-field">
             優先度
-            <select value={form.priority} onChange={(event) => update("priority", event.target.value as Priority)}>
+            <select
+              value={form.priority}
+              onChange={(event) =>
+                update(
+                  "priority",
+                  event.target.value as Priority
+                )
+              }
+            >
               <option value="high">高</option>
               <option value="medium">中</option>
               <option value="low">低</option>
@@ -153,18 +222,11 @@ export function TodoFormModal({ open, title, todo, todos, categories, onClose, o
             期限日
             <input
               type="date"
-              value={form.dueDate ?? ""}
-              onChange={(event) => update("dueDate", event.target.value)}
+              value={form.dueDate ?? getTodayDate()}
+              onChange={(event) =>
+                update("dueDate", event.target.value)
+              }
             />
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              checked={form.isToday}
-              onChange={(event) => update("isToday", event.target.checked)}
-            />
-            今日やる
           </label>
 
           <label className="form-field">
@@ -174,7 +236,12 @@ export function TodoFormModal({ open, title, todo, todos, categories, onClose, o
               min={0}
               max={100}
               value={form.progress}
-              onChange={(event) => update("progress", Number(event.target.value))}
+              onChange={(event) =>
+                update(
+                  "progress",
+                  Number(event.target.value)
+                )
+              }
             />
           </label>
 
@@ -183,7 +250,12 @@ export function TodoFormModal({ open, title, todo, todos, categories, onClose, o
             <input
               value={form.firstAction}
               placeholder="例：資料の見出しだけ作る"
-              onChange={(event) => update("firstAction", event.target.value)}
+              onChange={(event) =>
+                update(
+                  "firstAction",
+                  event.target.value
+                )
+              }
             />
           </label>
         </div>
@@ -191,10 +263,19 @@ export function TodoFormModal({ open, title, todo, todos, categories, onClose, o
         {error && <p role="alert">{error}</p>}
 
         <div className="form-actions">
-          <button className="button" type="button" onClick={onClose}>
+          <button
+            className="button"
+            type="button"
+            onClick={onClose}
+          >
             キャンセル
           </button>
-          <button className="button primary" type="button" onClick={handleSubmit}>
+
+          <button
+            className="button primary"
+            type="button"
+            onClick={handleSubmit}
+          >
             {todo ? "更新" : "登録"}
           </button>
         </div>
