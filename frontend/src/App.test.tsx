@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import App, {
   buildTaskHierarchy,
   formatDate,
+  getCategoryCardColors,
   getIncompleteChildren,
   getNextTodayTaskCount,
   isFirstActionUnset,
@@ -145,5 +146,14 @@ describe('App', () => {
   it('formats created date for task metadata', () => {
     expect(formatDate('2026-07-29T05:30:00.000Z')).toBe('2026-07-29')
     expect(formatDate('invalid')).toBe('未設定')
+  })
+
+  it('derives card colors from the category color', () => {
+    expect(getCategoryCardColors('#0ea5e9')).toEqual({
+      color: '#0ea5e9',
+      background: 'rgba(14, 165, 233, 0.08)',
+      border: 'rgba(14, 165, 233, 0.32)',
+    })
+    expect(getCategoryCardColors('invalid').color).toBe('#0f766e')
   })
 })

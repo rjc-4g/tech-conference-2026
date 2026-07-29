@@ -433,6 +433,57 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 
 - なし。
 
+### 2026-07-29: カテゴリ色のカード反映と完了済み表示強化
+
+#### 指示内容
+
+カテゴリに付けた色とTODOカードの色を合わせる。
+また、タスク完了にしたものをもっとわかりやすくする。
+ルールを変更しているため、再度ルール確認の上でログを残す。
+
+#### 成果物
+
+- `docs/design.md`
+  - タスク一覧の表示項目に、カテゴリ色を反映したカード表示と完了済みタスクの明示表示を追記。
+- `frontend/src/App.tsx`
+  - カテゴリ色からカード用の色、背景色、枠線色を生成する `getCategoryCardColors` を追加。
+  - TODOカードにカテゴリ色のCSS変数を渡す処理を追加。
+  - 完了済みタスクに `完了済み` ラベルを表示。
+- `frontend/src/App.css`
+  - TODOカードの左線、背景、枠線にカテゴリ色を反映。
+  - 完了済みカードの背景、タイトル取り消し線、文字色を調整。
+  - `完了済み` ラベルのスタイルを追加。
+- `frontend/src/App.test.tsx`
+  - カテゴリ色からカード表示色を生成するhelperテストを追加。
+- `docs/screenshots/todo-category-color-done.png`
+
+#### やり直し回数
+
+1回
+
+#### 人間レビューが必要だった箇所
+
+- なし。既存のカテゴリ色と完了状態の表示改善として対応した。
+
+#### テスト結果
+
+- `npm run test:frontend`: 成功。8 tests passed。
+- `npm run test:backend`: 成功。10 tests passed。
+- `docker compose up -d --build`: 成功。
+- Playwright確認:
+  - カテゴリ色 `#0ea5e9` がカード左線に反映され、算出結果が `rgb(14, 165, 233)` になることを確認。
+  - カード背景にカテゴリ色由来の薄いRGBA背景が使われることを確認。
+  - タスクを完了すると `完了済み` ラベルが表示されることを確認。
+  - 完了済みタスクのタイトルに取り消し線が表示されることを確認。
+- `docker compose exec -T frontend npm run build -w frontend`: 成功。
+- `docker compose exec -T backend npm run build -w backend`: 成功。
+
+#### テストで落ちた内容
+
+- 1回目のPlaywright確認: 失敗。
+  - 内容: サンドボックス内でChromium起動が `spawn EPERM` で失敗した。
+  - 対応: UI確認にブラウザ起動が必要なため、権限付きで再実行して成功した。
+
 ### 2026-07-29: 設定UIのモーダル化
 
 #### 指示内容

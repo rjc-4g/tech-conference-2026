@@ -288,6 +288,21 @@ function App() {
     return categories.find((category) => category.id === id)?.name ?? '未分類'
   }
 
+  function categoryColor(id?: string) {
+    return categories.find((category) => category.id === id)?.color
+  }
+
+  function taskCardStyle(task: HierarchyTask) {
+    const colors = getCategoryCardColors(categoryColor(task.categoryId))
+    return {
+      '--task-depth': task.depth,
+      '--task-category-color': colors.color,
+      '--task-category-bg': colors.background,
+      '--task-category-border': colors.border,
+    } as CSSProperties &
+      Record<'--task-depth' | '--task-category-color' | '--task-category-bg' | '--task-category-border', string | number>
+  }
+
   function parentTaskTitle(id?: string, fallbackTitle?: string) {
     if (!id) {
       return 'なし'
@@ -411,7 +426,7 @@ function App() {
                 task.status === 'done' ? 'task done' : 'task',
                 task.depth > 0 ? 'child-task' : 'parent-task',
               ].join(' ')}
-              style={{ '--task-depth': task.depth } as CSSProperties & Record<'--task-depth', number>}
+              style={taskCardStyle(task)}
             >
               <div className="task-main">
                 <div>
@@ -429,6 +444,7 @@ function App() {
                   </div>
                   <h2>{task.title}</h2>
                   <div className="task-alerts">
+                    {task.status === 'done' && <span className="task-alert completed">完了済み</span>}
                     {isOverdue(task) && <span className="task-alert overdue">期限切れ</span>}
                     {isStaleTask(task, settings.staleTaskDays) && (
                       <span className="task-alert stale">未着手 {settings.staleTaskDays}日以上</span>
@@ -778,6 +794,32 @@ export function formatDate(value?: string) {
     return '未設定'
   }
   return getLocalDateString(date)
+}
+
+export function getCategoryCardColors(color?: string) {
+  const normalizedColor = normalizeHexColor(color) ?? '#0f766e'
+  return {
+    color: normalizedColor,
+    background: hexToRgba(normalizedColor, 0.08),
+    border: hexToRgba(normalizedColor, 0.32),
+  }
+}
+
+function normalizeHexColor(color?: string) {
+  if (!color) {
+    return undefined
+  }
+  if (/^#[0-9a-fA-F]{6}$/.test(color)) {
+    return color
+  }
+  return undefined
+}
+
+function hexToRgba(hex: string, alpha: number) {
+  const red = Number.parseInt(hex.slice(1, 3), 16)
+  const green = Number.parseInt(hex.slice(3, 5), 16)
+  const blue = Number.parseInt(hex.slice(5, 7), 16)
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`
 }
 
 function getLocalDateString(date = new Date()) {
