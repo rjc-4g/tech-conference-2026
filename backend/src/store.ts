@@ -92,9 +92,10 @@ export class TodoStore {
 
   createTask(input: TaskInput) {
     const now = new Date().toISOString();
+    const normalizedInput = this.normalizeTaskInput(input);
     const task: Task = {
       id: randomUUID(),
-      ...this.normalizeTaskInput(input),
+      ...this.normalizeProgressStatus(normalizedInput, undefined, now),
       createdAt: now,
       updatedAt: now,
     };
@@ -106,10 +107,12 @@ export class TodoStore {
 
   updateTask(id: string, input: TaskInput) {
     const current = this.getTask(id);
+    const now = new Date().toISOString();
+    const normalizedInput = this.normalizeTaskInput(input, current);
     const next: Task = {
       ...current,
-      ...this.normalizeTaskInput(input, current),
-      updatedAt: new Date().toISOString(),
+      ...this.normalizeProgressStatus(normalizedInput, current, now),
+      updatedAt: now,
     };
 
     this.validateParent(id, next.parentTaskId);
@@ -294,6 +297,26 @@ export class TodoStore {
       firstAction,
       progress,
       isToday,
+    };
+  }
+
+  private normalizeProgressStatus(
+    input: ReturnType<TodoStore["normalizeTaskInput"]>,
+    current: Task | undefined,
+    now: string,
+  ) {
+    if (input.progress === 100 || input.status === "done") {
+      return {
+        ...input,
+        status: "done" as const,
+        progress: 100,
+        completedAt: current?.completedAt ?? now,
+      };
+    }
+
+    return {
+      ...input,
+      completedAt: current?.completedAt,
     };
   }
 

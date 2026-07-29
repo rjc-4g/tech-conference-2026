@@ -236,6 +236,18 @@ button:hover {
   border-color: #64748b;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  border-color: #cbd5e1;
+  color: #94a3b8;
+  background: #f1f5f9;
+  opacity: 0.72;
+}
+
+button:disabled:hover {
+  border-color: #cbd5e1;
+}
+
 .primary-button {
   border-color: #0f766e;
   background: #0f766e;
@@ -623,6 +635,26 @@ button:hover {
   font-weight: 700;
 }
 
+.progress-control {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.progress-header strong {
+  color: #172033;
+}
+
 .progress {
   height: 8px;
   overflow: hidden;
@@ -633,7 +665,18 @@ button:hover {
 .progress span {
   display: block;
   height: 100%;
-  background: #0f766e;
+  background: var(--task-category-color, #0f766e);
+}
+
+.progress-control input[type='range'] {
+  width: 100%;
+  accent-color: var(--task-category-color, #0f766e);
+  cursor: pointer;
+}
+
+.progress-control input[type='range']:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .first-action {

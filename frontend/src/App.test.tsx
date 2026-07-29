@@ -9,6 +9,7 @@ import App, {
   isFirstActionUnset,
   isOverdue,
   isStaleTask,
+  isTaskLocked,
 } from './App'
 
 describe('App', () => {
@@ -155,5 +156,11 @@ describe('App', () => {
       border: 'rgba(14, 165, 233, 0.32)',
     })
     expect(getCategoryCardColors('invalid').color).toBe('#0f766e')
+  })
+
+  it('locks edit and progress interactions for completed tasks', () => {
+    expect(isTaskLocked({ status: 'done' })).toBe(true)
+    expect(isTaskLocked({ status: 'todo' })).toBe(false)
+    expect(isTaskLocked({ status: 'in_progress' })).toBe(false)
   })
 })

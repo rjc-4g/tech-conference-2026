@@ -433,6 +433,61 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 
 - なし。
 
+### 2026-07-29: カード上の進捗スライダー操作と完了時ロック
+
+#### 指示内容
+
+最初の一歩の上に進捗バーを表示し、進捗バーを直接スライドして進捗率を変更できるようにする。状態が完了の場合は編集ボタン押下不可、進捗バー変更不可にする。進捗率を100%にしたら自動的に状態を完了へ変更する。
+
+#### 成果物
+
+- `docs/design.md`
+  - 一覧カード上の進捗バー表示位置、スライダー操作、100%時の自動完了、完了済みタスクの操作不可仕様を追記。
+- `frontend/src/App.tsx`
+  - タスクカードの進捗表示をスライダー付きに変更。
+  - 進捗バーを最初の一歩より上に移動。
+  - 進捗率変更時に `PUT /api/tasks/:id` で保存し、100%の場合は状態を完了に更新。
+  - 完了済みタスクの編集ボタンと進捗スライダーを無効化。
+- `frontend/src/App.css`
+  - 進捗スライダー、進捗見出し、無効ボタンのスタイルを追加。
+- `backend/src/store.ts`
+  - タスク登録・更新時に、進捗率100%または状態完了の場合は状態を完了、進捗率を100%、完了日時ありへ正規化。
+- `frontend/src/App.test.tsx`
+  - 完了済みタスクの操作ロック判定テストを追加。
+- `backend/src/app.test.ts`
+  - 進捗率100%更新時に状態が完了へ変わるAPIテストを追加。
+- `docs/screenshots/progress-slider-complete.png`
+
+#### やり直し回数
+
+2回
+
+#### 人間レビューが必要だった箇所
+
+- なし。既存の進捗率手入力仕様を、一覧カード上で直接操作できるUIへ拡張した。
+
+#### テスト結果
+
+- `npm run test:frontend`: 成功。9 tests passed。
+- `npm run test:backend`: 成功。11 tests passed。
+- `npx tsc -b frontend`: 成功。
+- `npm run build -w backend`: 成功。
+- `docker compose exec -T frontend npm run build -w frontend`: 成功。
+- `docker compose exec -T backend npm run build -w backend`: 成功。
+- `docker compose up -d --build`: 成功。
+- Playwright確認:
+  - 進捗ブロックが最初の一歩より上に表示されることを確認。
+  - カード上のレンジ入力が存在することを確認。
+  - 進捗率を100%へ変更するとカードが完了状態になることを確認。
+  - 完了状態では編集ボタンと進捗スライダーが無効化されることを確認。
+
+#### テストで落ちた内容
+
+- `npm run test:frontend`: 初回追加テストがSSRの読み込み中状態を前提にしておらず失敗。操作ロック判定の単体テストへ修正して成功。
+- `npm run build -w backend`: 初回、`TaskStore` という誤った型名で `tsc` が失敗。正しい `TodoStore` に修正して成功。
+- `npm run build -w frontend`: Windowsローカルでは `vite build` が詳細エラーなしの終了コード `3221226505` で失敗。`npx tsc -b frontend` は成功し、Docker内の `npm run build -w frontend` は成功したため、実装・型ではなくローカルWindows上のViteバンドル工程の問題として扱う。
+- Playwright確認: 通常権限ではブラウザ起動が `spawn EPERM` で失敗。権限昇格して再実行し成功。
+
 ### 2026-07-29: カテゴリ色のカード反映と完了済み表示強化
 
 #### 指示内容

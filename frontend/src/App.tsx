@@ -284,6 +284,42 @@ function App() {
     await loadTasks()
   }
 
+  async function updateTaskProgress(task: Task, progress: number) {
+    if (isTaskLocked(task)) {
+      return
+    }
+
+    const nextStatus = progress === 100 ? 'done' : task.status
+    setError('')
+    setTasks((currentTasks) =>
+      currentTasks.map((currentTask) =>
+        currentTask.id === task.id ? { ...currentTask, progress, status: nextStatus } : currentTask,
+      ),
+    )
+
+    const response = await fetch(`/api/tasks/${task.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: task.title,
+        description: task.description,
+        dueDate: task.dueDate,
+        categoryId: task.categoryId,
+        parentTaskId: task.parentTaskId,
+        priority: task.priority,
+        isToday: task.isToday,
+        firstAction: task.firstAction,
+        progress,
+        status: nextStatus,
+      }),
+    })
+
+    if (!response.ok) {
+      setError('進捗率の更新に失敗しました。')
+    }
+    await loadTasks()
+  }
+
   function categoryName(id?: string) {
     return categories.find((category) => category.id === id)?.name ?? '未分類'
   }
@@ -480,22 +516,34 @@ function App() {
                       : parentTaskTitle(task.parentTaskId, task.parentTaskTitle)}
                   </dd>
                 </div>
-                <div>
-                  <dt>進捗</dt>
-                  <dd>{task.progress}%</dd>
-                </div>
               </dl>
+              <div className="progress-control">
+                <div className="progress-header">
+                  <span>進捗</span>
+                  <strong>{task.progress}%</strong>
+                </div>
+                <div className="progress" aria-hidden="true">
+                  <span style={{ width: `${task.progress}%` }} />
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={task.progress}
+                  aria-label={`${task.title} の進捗率`}
+                  disabled={isTaskLocked(task)}
+                  onChange={(event) => void updateTaskProgress(task, Number(event.target.value))}
+                />
+              </div>
               {task.firstAction && (
                 <p className="first-action">
                   <span>最初の一歩</span>
                   {task.firstAction}
                 </p>
               )}
-              <div className="progress" aria-label={`進捗 ${task.progress}%`}>
-                <span style={{ width: `${task.progress}%` }} />
-              </div>
               <div className="task-actions">
-                <button type="button" onClick={() => openEditModal(task)}>
+                <button type="button" disabled={isTaskLocked(task)} onClick={() => openEditModal(task)}>
                   編集
                 </button>
                 <button type="button" onClick={() => updateTaskAction(task, 'start')}>
@@ -783,6 +831,10 @@ export function getNextTodayTaskCount(tasks: Task[], nextIsToday: boolean, editi
 
 export function getIncompleteChildren(tasks: Task[], parentTaskId: string) {
   return tasks.filter((task) => task.parentTaskId === parentTaskId && task.status !== 'done')
+}
+
+export function isTaskLocked(task: Pick<Task, 'status'>) {
+  return task.status === 'done'
 }
 
 export function formatDate(value?: string) {

@@ -65,6 +65,22 @@ describe("tasks api", () => {
     expect(response.body.message).toContain("Progress");
   });
 
+  it("marks a task as done when progress reaches 100", async () => {
+    const created = await request(app)
+      .post("/api/tasks")
+      .send({ title: "進捗で完了する", priority: "medium", isToday: false, progress: 20 })
+      .expect(201);
+
+    const updated = await request(app)
+      .put(`/api/tasks/${created.body.id}`)
+      .send({ title: "進捗で完了する", priority: "medium", isToday: false, progress: 100 })
+      .expect(200);
+
+    expect(updated.body.progress).toBe(100);
+    expect(updated.body.status).toBe("done");
+    expect(updated.body.completedAt).toBeTruthy();
+  });
+
   it("filters by keyword and sorts by priority", async () => {
     await request(app)
       .post("/api/tasks")
