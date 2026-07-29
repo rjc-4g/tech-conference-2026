@@ -122,16 +122,12 @@ export class TodoStore {
 
   deleteTask(id: string) {
     this.getTask(id);
-    for (const task of this.tasks.values()) {
-      if (task.parentTaskId === id) {
-        this.tasks.set(task.id, {
-          ...task,
-          parentTaskId: undefined,
-          updatedAt: new Date().toISOString(),
-        });
-      }
+    const deleteIds = this.getDescendantTaskIds(id);
+    deleteIds.add(id);
+
+    for (const deleteId of deleteIds) {
+      this.tasks.delete(deleteId);
     }
-    this.tasks.delete(id);
   }
 
   completeTask(id: string) {
@@ -318,6 +314,27 @@ export class TodoStore {
       ...input,
       completedAt: current?.completedAt,
     };
+  }
+
+  private getDescendantTaskIds(parentTaskId: string) {
+    const descendantIds = new Set<string>();
+    const pendingParentIds = [parentTaskId];
+
+    while (pendingParentIds.length > 0) {
+      const currentParentId = pendingParentIds.pop();
+      if (!currentParentId) {
+        continue;
+      }
+
+      for (const task of this.tasks.values()) {
+        if (task.parentTaskId === currentParentId && !descendantIds.has(task.id)) {
+          descendantIds.add(task.id);
+          pendingParentIds.push(task.id);
+        }
+      }
+    }
+
+    return descendantIds;
   }
 
   private validateParent(taskId: string, parentTaskId?: string) {

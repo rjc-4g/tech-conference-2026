@@ -433,6 +433,57 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 
 - なし。
 
+### 2026-07-29: 削除確認と親削除時の子タスク削除
+
+#### 指示内容
+
+親タスクを削除したら子タスクも削除されること。削除ボタン押下時は本当に削除してよいか確認ダイアログを表示すること。
+
+#### 成果物
+
+- `docs/design.md`
+  - 親タスク削除時は紐づく子タスクも削除する仕様を追記。
+  - 削除ボタン押下時に確認ダイアログを表示する仕様を追記。
+  - 親タスク削除時は子タスクも削除されることを確認ダイアログで示す仕様を追記。
+- `backend/src/store.ts`
+  - `deleteTask` を変更し、親タスク削除時に子孫タスクも削除するようにした。
+- `backend/src/app.test.ts`
+  - 親タスク削除時に子タスクも取得できなくなるAPIテストを追加。
+- `frontend/src/App.tsx`
+  - 削除ボタン押下時に `window.confirm` を表示。
+  - 子タスクがある場合は、削除される子タスク件数を確認文言に含める。
+  - 削除対象の子孫タスクを数える `getDescendantTasks` を追加。
+- `frontend/src/App.test.tsx`
+  - `getDescendantTasks` の確認を追加。
+- `docs/screenshots/delete-confirm-cascade.png`
+
+#### やり直し回数
+
+1回
+
+#### 人間レビューが必要だった箇所
+
+- なし。削除前確認と親削除時の子タスク削除は、ユーザー指示に沿った既存削除仕様の明確化として実装した。
+
+#### テスト結果
+
+- `npm run test:backend`: 成功。12 tests passed。
+- `npm run test:frontend`: 成功。9 tests passed。
+- `npx tsc -b frontend`: 成功。
+- `npm run build -w backend`: 成功。
+- `docker compose exec -T frontend npm run build -w frontend`: 成功。
+- `docker compose exec -T backend npm run build -w backend`: 成功。
+- `docker compose up -d --build`: 成功。
+- Playwright確認:
+  - 削除ボタン押下時に確認ダイアログが表示されることを確認。
+  - 親タスク削除確認文言に、子タスク1件も削除される旨が含まれることを確認。
+  - 確認ダイアログでOKを選ぶと、親タスク1件と子タスク1件の合計2件が画面から消えることを確認。
+  - 確認後、インメモリ状態を戻すため `docker compose restart backend frontend` を実行。
+
+#### テストで落ちた内容
+
+- Playwright確認: 初回はスクリプト内の日本語文字列がPowerShell経由で崩れ、対象カード検索に失敗。文字列依存を避けて先頭の親カードを対象にする形へ変更して成功。
+
 ### 2026-07-29: カード上の進捗スライダー操作と完了時ロック
 
 #### 指示内容

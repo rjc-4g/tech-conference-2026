@@ -261,6 +261,17 @@ function App() {
   }
 
   async function updateTaskAction(task: Task, action: 'start' | 'complete' | 'delete') {
+    if (action === 'delete') {
+      const descendantTasks = getDescendantTasks(tasks, task.id)
+      const message =
+        descendantTasks.length > 0
+          ? `「${task.title}」を削除しますか？子タスク${descendantTasks.length}件も削除されます。`
+          : `「${task.title}」を削除しますか？`
+      if (!window.confirm(message)) {
+        return
+      }
+    }
+
     if (action === 'complete') {
       const incompleteChildren = getIncompleteChildren(tasks, task.id)
       if (incompleteChildren.length > 0) {
@@ -831,6 +842,27 @@ export function getNextTodayTaskCount(tasks: Task[], nextIsToday: boolean, editi
 
 export function getIncompleteChildren(tasks: Task[], parentTaskId: string) {
   return tasks.filter((task) => task.parentTaskId === parentTaskId && task.status !== 'done')
+}
+
+export function getDescendantTasks(tasks: Task[], parentTaskId: string) {
+  const descendants: Task[] = []
+  const pendingParentIds = [parentTaskId]
+
+  while (pendingParentIds.length > 0) {
+    const currentParentId = pendingParentIds.pop()
+    if (!currentParentId) {
+      continue
+    }
+
+    for (const task of tasks) {
+      if (task.parentTaskId === currentParentId && !descendants.some((descendant) => descendant.id === task.id)) {
+        descendants.push(task)
+        pendingParentIds.push(task.id)
+      }
+    }
+  }
+
+  return descendants
 }
 
 export function isTaskLocked(task: Pick<Task, 'status'>) {

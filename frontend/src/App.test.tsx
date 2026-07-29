@@ -4,6 +4,7 @@ import App, {
   buildTaskHierarchy,
   formatDate,
   getCategoryCardColors,
+  getDescendantTasks,
   getIncompleteChildren,
   getNextTodayTaskCount,
   isFirstActionUnset,
@@ -135,6 +136,7 @@ describe('App', () => {
 
     expect(getNextTodayTaskCount([...tasks], true, null)).toBe(2)
     expect(getIncompleteChildren([...tasks], 'parent')).toHaveLength(1)
+    expect(getDescendantTasks([...tasks], 'parent').map((task) => task.id)).toEqual(['child'])
   })
 
   it('detects tasks without first action while excluding completed tasks', () => {

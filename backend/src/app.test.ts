@@ -120,6 +120,27 @@ describe("tasks api", () => {
     expect(response.body[0].parentTaskTitle).toBe("買い物リストを作る");
   });
 
+  it("deletes child tasks when deleting their parent", async () => {
+    const parent = await request(app)
+      .post("/api/tasks")
+      .send({ title: "削除する親", priority: "medium", isToday: false })
+      .expect(201);
+    const child = await request(app)
+      .post("/api/tasks")
+      .send({
+        title: "一緒に削除される子",
+        priority: "medium",
+        isToday: false,
+        parentTaskId: parent.body.id,
+      })
+      .expect(201);
+
+    await request(app).delete(`/api/tasks/${parent.body.id}`).expect(204);
+
+    await request(app).get(`/api/tasks/${parent.body.id}`).expect(404);
+    await request(app).get(`/api/tasks/${child.body.id}`).expect(404);
+  });
+
   it("rejects invalid parent relationships", async () => {
     const parent = await request(app)
       .post("/api/tasks")
