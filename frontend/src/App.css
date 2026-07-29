@@ -321,7 +321,7 @@ button:hover {
 
 .filters {
   display: grid;
-  grid-template-columns: minmax(240px, 1fr) repeat(3, minmax(150px, 190px));
+  grid-template-columns: minmax(240px, 1fr) repeat(4, minmax(145px, 180px));
   gap: 12px;
   margin-bottom: 18px;
 }

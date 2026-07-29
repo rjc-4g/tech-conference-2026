@@ -14,6 +14,7 @@ type Task = {
   dueDate?: string
   categoryId?: string
   parentTaskId?: string
+  parentTaskTitle?: string
   firstAction?: string
   isToday: boolean
   startedAt?: string
@@ -87,6 +88,7 @@ function App() {
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState('all')
   const [categoryId, setCategoryId] = useState('all')
+  const [todayFilter, setTodayFilter] = useState('all')
   const [sort, setSort] = useState('createdAt')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
@@ -141,6 +143,7 @@ function App() {
     if (query) params.set('q', query)
     if (status !== 'all') params.set('status', status)
     if (categoryId !== 'all') params.set('categoryId', categoryId)
+    if (todayFilter === 'today') params.set('isToday', 'true')
     params.set('sort', sort)
 
     const response = await fetch(`/api/tasks?${params.toString()}`)
@@ -155,7 +158,7 @@ function App() {
     if (!isLoading) {
       void loadTasks()
     }
-  }, [query, status, categoryId, sort])
+  }, [query, status, categoryId, todayFilter, sort])
 
   function openCreateModal() {
     setEditingTask(null)
@@ -278,8 +281,11 @@ function App() {
     return categories.find((category) => category.id === id)?.name ?? '未分類'
   }
 
-  function parentTaskTitle(id?: string) {
-    return tasks.find((task) => task.id === id)?.title ?? 'なし'
+  function parentTaskTitle(id?: string, fallbackTitle?: string) {
+    if (!id) {
+      return 'なし'
+    }
+    return tasks.find((task) => task.id === id)?.title ?? fallbackTitle ?? 'フィルタ対象外'
   }
 
   return (
@@ -337,6 +343,10 @@ function App() {
           <option value="todo">未着手</option>
           <option value="in_progress">着手中</option>
           <option value="done">完了</option>
+        </select>
+        <select value={todayFilter} onChange={(event) => setTodayFilter(event.target.value)}>
+          <option value="all">すべてのTODO</option>
+          <option value="today">今日やるTODOのみ</option>
         </select>
         <select value={sort} onChange={(event) => setSort(event.target.value)}>
           <option value="createdAt">作成日順</option>
@@ -435,7 +445,7 @@ function App() {
                       </span>
                     ) : (
                       <span className="relationship-badge child-badge">
-                        子タスク / 親: {parentTaskTitle(task.parentTaskId)}
+                        子タスク / 親: {parentTaskTitle(task.parentTaskId, task.parentTaskTitle)}
                       </span>
                     )}
                   </div>
@@ -453,6 +463,10 @@ function App() {
               </div>
               <dl className="task-meta">
                 <div>
+                  <dt>作成日</dt>
+                  <dd>{formatDate(task.createdAt)}</dd>
+                </div>
+                <div>
                   <dt>期限</dt>
                   <dd>{task.dueDate ?? '未設定'}</dd>
                 </div>
@@ -466,7 +480,11 @@ function App() {
                 </div>
                 <div>
                   <dt>親タスク</dt>
-                  <dd>{task.depth === 0 ? `${task.childCount}件の子タスク` : parentTaskTitle(task.parentTaskId)}</dd>
+                  <dd>
+                    {task.depth === 0
+                      ? `${task.childCount}件の子タスク`
+                      : parentTaskTitle(task.parentTaskId, task.parentTaskTitle)}
+                  </dd>
                 </div>
                 <div>
                   <dt>進捗</dt>
@@ -644,7 +662,11 @@ export function buildTaskHierarchy(tasks: Task[]): HierarchyTask[] {
     byParent.set(task.parentTaskId, [...(byParent.get(task.parentTaskId) ?? []), task])
   }
 
-  const childIds = new Set(tasks.filter((task) => task.parentTaskId).map((task) => task.id))
+  const childIds = new Set(
+    tasks
+      .filter((task) => task.parentTaskId && byId.has(task.parentTaskId))
+      .map((task) => task.id),
+  )
   const roots = tasks.filter((task) => !childIds.has(task.id))
   const result: HierarchyTask[] = []
   const visited = new Set<string>()
@@ -669,7 +691,7 @@ export function buildTaskHierarchy(tasks: Task[]): HierarchyTask[] {
   }
 
   for (const root of roots) {
-    append(root, 0)
+    append(root, root.parentTaskId ? 1 : 0)
   }
 
   for (const task of tasks) {
@@ -719,6 +741,17 @@ export function getNextTodayTaskCount(tasks: Task[], nextIsToday: boolean, editi
 
 export function getIncompleteChildren(tasks: Task[], parentTaskId: string) {
   return tasks.filter((task) => task.parentTaskId === parentTaskId && task.status !== 'done')
+}
+
+export function formatDate(value?: string) {
+  if (!value) {
+    return '未設定'
+  }
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return '未設定'
+  }
+  return getLocalDateString(date)
 }
 
 function getLocalDateString(date = new Date()) {

@@ -2,6 +2,7 @@ import { renderToString } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import App, {
   buildTaskHierarchy,
+  formatDate,
   getIncompleteChildren,
   getNextTodayTaskCount,
   isFirstActionUnset,
@@ -18,6 +19,7 @@ describe('App', () => {
     expect(html).toContain('カテゴリ設定')
     expect(html).toContain('設定')
     expect(html).toContain('今日やる上限')
+    expect(html).toContain('今日やるTODOのみ')
     expect(html).toContain('キーワード検索')
     expect(html).toContain('新規登録')
   })
@@ -64,6 +66,30 @@ describe('App', () => {
     expect(hierarchy[0].childCount).toBe(1)
     expect(hierarchy[0].completedChildCount).toBe(1)
     expect(hierarchy[1].depth).toBe(1)
+  })
+
+  it('keeps filtered child tasks marked as children when parent is absent', () => {
+    const now = '2026-07-29T00:00:00.000Z'
+    const tasks = [
+      {
+        id: 'child',
+        title: 'フィルタされた子タスク',
+        status: 'todo',
+        priority: 'medium',
+        parentTaskId: 'filtered-parent',
+        isToday: true,
+        createdAt: now,
+        updatedAt: now,
+        progress: 0,
+      },
+    ] as const
+
+    const hierarchy = buildTaskHierarchy([...tasks])
+
+    expect(hierarchy).toHaveLength(1)
+    expect(hierarchy[0].id).toBe('child')
+    expect(hierarchy[0].depth).toBe(1)
+    expect(hierarchy[0].childCount).toBe(0)
   })
 
   it('detects overdue and stale tasks', () => {
@@ -113,5 +139,10 @@ describe('App', () => {
     expect(isFirstActionUnset({ status: 'in_progress' })).toBe(true)
     expect(isFirstActionUnset({ status: 'done' })).toBe(false)
     expect(isFirstActionUnset({ status: 'todo', firstAction: '資料を5分開く' })).toBe(false)
+  })
+
+  it('formats created date for task metadata', () => {
+    expect(formatDate('2026-07-29T05:30:00.000Z')).toBe('2026-07-29')
+    expect(formatDate('invalid')).toBe('未設定')
   })
 })

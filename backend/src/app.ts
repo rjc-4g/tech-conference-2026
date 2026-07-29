@@ -13,9 +13,16 @@ export function createApp(store = new TodoStore()) {
       q: asString(req.query.q),
       categoryId: asString(req.query.categoryId),
       status: asString(req.query.status),
+      isToday: asString(req.query.isToday),
       sort: asString(req.query.sort),
     });
-    res.json(tasks.map((task) => ({ ...task, progress: store.getProgress(task.id) })));
+    res.json(
+      tasks.map((task) => ({
+        ...task,
+        progress: store.getProgress(task.id),
+        parentTaskTitle: store.getParentTaskTitle(task.id),
+      })),
+    );
   });
 
   app.post("/api/tasks", (req, res, next) => {
@@ -29,7 +36,7 @@ export function createApp(store = new TodoStore()) {
   app.get("/api/tasks/:id", (req, res, next) => {
     try {
       const task = store.getTask(req.params.id);
-      res.json({ ...task, progress: store.getProgress(task.id) });
+      res.json({ ...task, progress: store.getProgress(task.id), parentTaskTitle: store.getParentTaskTitle(task.id) });
     } catch (error) {
       next(error);
     }

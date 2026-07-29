@@ -81,6 +81,29 @@ describe("tasks api", () => {
     expect(response.body[0].priority).toBe("high");
   });
 
+  it("filters by first action keyword", async () => {
+    const response = await request(app).get("/api/tasks?q=不足食材").expect(200);
+
+    expect(response.body).toHaveLength(1);
+    expect(response.body[0].title).toBe("冷蔵庫の中身を確認する");
+    expect(response.body[0].firstAction).toContain("不足食材");
+  });
+
+  it("filters by today tasks", async () => {
+    const response = await request(app).get("/api/tasks?isToday=true").expect(200);
+
+    expect(response.body.length).toBeGreaterThan(0);
+    expect(response.body.every((task: { isToday: boolean }) => task.isToday)).toBe(true);
+  });
+
+  it("returns parent task title for filtered child tasks", async () => {
+    const response = await request(app).get("/api/tasks?q=冷蔵庫").expect(200);
+
+    expect(response.body).toHaveLength(1);
+    expect(response.body[0].title).toBe("冷蔵庫の中身を確認する");
+    expect(response.body[0].parentTaskTitle).toBe("買い物リストを作る");
+  });
+
   it("rejects invalid parent relationships", async () => {
     const parent = await request(app)
       .post("/api/tasks")

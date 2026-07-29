@@ -9,7 +9,6 @@
 - 作業単位ごとに、使用した指示内容と成果物を記録する。
 - やり直し回数を記録する。
 - 人間レビューが必要だった箇所を記録する。
-- Cursorレビューで指摘された内容を記録する。
 - テストで落ちた内容を記録する。
 
 ## 作業ログ
@@ -23,7 +22,7 @@ TODOアプリをCodex CLIで作るため、以下を段階的に実施する。
 - 設計書の作成
 - 技術スタックの選定
 - AGENTS.mdの作成
-- AIAD検証として作業指示、やり直し回数、人間レビュー箇所、Cursorレビュー指摘、テスト失敗、Codex CLI利用状況を記録できるようにする
+- AIAD検証として作業指示、やり直し回数、人間レビュー箇所、テスト失敗、Codex CLI利用状況を記録できるようにする
 - ライブラリ利用ルールを明文化する
 
 #### 成果物
@@ -47,10 +46,6 @@ TODOアプリをCodex CLIで作るため、以下を段階的に実施する。
 - Phase 3の独自価値機能が、ユーザの期待する「登録して満足してしまうことの抑止」に合っているか。
 - 技術スタックとしてReact + Vite + Express + TypeScriptで進めてよいか。
 - 初期実装でインメモリストアを採用し、DB導入を後回しにしてよいか。
-
-#### Cursorレビュー指摘
-
-未実施。
 
 #### テスト結果
 
@@ -86,10 +81,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 #### 人間レビューが必要だった箇所
 
 - Docker Composeを正式な開発起動手段として採用するか。
-
-#### Cursorレビュー指摘
-
-未実施。
 
 #### テスト結果
 
@@ -144,10 +135,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 #### 人間レビューが必要だった箇所
 
 - Phase 3の「最初の一歩」「今日やる上限」「未着手タスク警告」の扱い。今回はPhase 3の警告・制御ロジックには踏み込まず、設計済み入力項目の表示に留めた。
-
-#### Cursorレビュー指摘
-
-未実施。
 
 #### テスト結果
 
@@ -206,10 +193,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 
 - なし。Phase 2の「タスクの階層化」「進捗バー」の表示改善範囲として実装した。
 
-#### Cursorレビュー指摘
-
-未実施。
-
 #### テスト結果
 
 - `npm run test:backend`: 成功。5 tests passed。
@@ -256,10 +239,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 #### 人間レビューが必要だった箇所
 
 - ライブラリ更新が必要なため、ユーザー承認を受けてから実施した。
-
-#### Cursorレビュー指摘
-
-未実施。
 
 #### テスト結果
 
@@ -325,10 +304,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 
 - なし。設計書に記載済みのPhase 2/3項目として実装した。
 
-#### Cursorレビュー指摘
-
-未実施。
-
 #### テスト結果
 
 - `npm run test:backend`: 成功。6 tests passed。
@@ -384,10 +359,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 #### 人間レビューが必要だった箇所
 
 - Phase 3の独自価値機能は実装前レビュー対象だが、ユーザーから「残りフェーズ３の実装を行ってください」と明示指示があったため、実装承認済みとして進めた。
-
-#### Cursorレビュー指摘
-
-未実施。
 
 #### テスト結果
 
@@ -452,10 +423,6 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 
 - 進捗率の扱いが既存設計の子タスク完了率自動計算と衝突したため、ユーザー指示に合わせて手入力仕様へ設計書を更新した。
 
-#### Cursorレビュー指摘
-
-未実施。
-
 #### テスト結果
 
 - `npm run test:backend`: 成功。7 tests passed。
@@ -472,3 +439,249 @@ Dockerを使用する形でアプリの起動確認に対応できるか確認�
 - 1回目のPlaywright確認: 失敗。
   - 内容: `保存` ボタンが設定UIとタスク編集モーダルの2か所にあり、strict locatorが解決できなかった。
   - 対応: `.modal` 内の `保存` ボタンに絞って再実行し、成功した。
+
+### 2026-07-29: 今日やるTODOフィルタの追加
+
+#### 指示内容
+
+今日やるTODOになっているタスクでフィルタをかけられるようにする。
+
+#### 成果物
+
+- `docs/design.md`
+  - フィルタ・検索エリアに今日やるTODO絞り込みを追記。
+  - `GET /api/tasks` のクエリに `isToday` を追記。
+- `backend/src/store.ts`
+  - `isToday=true` クエリ指定時に今日やるTODOだけを返すフィルタを追加。
+- `backend/src/app.ts`
+  - `isToday` クエリをstoreへ渡す処理を追加。
+- `backend/src/app.test.ts`
+  - 今日やるTODOフィルタのAPIテストを追加。
+- `frontend/src/App.tsx`
+  - フィルタUIに `今日やるTODOのみ` を追加。
+  - 選択時に `/api/tasks?isToday=true` を付与する処理を追加。
+- `frontend/src/App.css`
+  - フィルタ項目追加に合わせてgrid列を調整。
+- `frontend/src/App.test.tsx`
+  - `今日やるTODOのみ` の表示確認を追加。
+- `docs/screenshots/todo-today-filter.png`
+
+#### Codex CLI利用状況
+
+- 開始前: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+- 終了後: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+
+#### やり直し回数
+
+0回
+
+#### 人間レビューが必要だった箇所
+
+- なし。ユーザー指示に基づき、既存のフィルタ機能の拡張として実装した。
+
+#### テスト結果
+
+- `npm run test:backend`: 成功。8 tests passed。
+- `npm run test:frontend`: 成功。5 tests passed。
+- `docker compose up -d --build`: 成功。
+- Playwright確認:
+  - `今日やるTODOのみ` 選択時に `isToday=true` のAPIリクエストが発行されることを確認。
+  - 一覧が今日やるTODOの2件だけになることを確認。
+- `docker compose exec -T frontend npm run build -w frontend`: 成功。
+- `docker compose exec -T backend npm run build -w backend`: 成功。
+
+#### テストで落ちた内容
+
+- なし。
+
+### 2026-07-29: TODO一覧への作成日表示追加
+
+#### 指示内容
+
+`createdAt` もTODOに表示して視覚的にわかるようにする。
+
+#### 成果物
+
+- `docs/design.md`
+  - タスク一覧の表示項目に作成日を追記。
+- `frontend/src/App.tsx`
+  - タスク一覧のメタ情報に作成日を追加。
+  - `createdAt` を `YYYY-MM-DD` で表示する `formatDate` helperを追加。
+- `frontend/src/App.test.tsx`
+  - 作成日の整形helperテストを追加。
+- `docs/screenshots/todo-created-at-visible.png`
+
+#### Codex CLI利用状況
+
+- 開始前: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+- 終了後: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+
+#### やり直し回数
+
+0回
+
+#### 人間レビューが必要だった箇所
+
+- なし。既存データ項目 `createdAt` の一覧表示追加として対応した。
+
+#### テスト結果
+
+- `npm run test:frontend`: 成功。7 tests passed。
+- `npm run test:backend`: 成功。10 tests passed。
+- `docker compose up -d --build`: 成功。
+- Playwright確認:
+  - 一覧の先頭タスクに作成日 `2026-07-29` が表示されることを確認。
+- `docker compose exec -T frontend npm run build -w frontend`: 成功。
+- `docker compose exec -T backend npm run build -w backend`: 成功。
+
+#### テストで落ちた内容
+
+- なし。
+
+### 2026-07-29: 最初の一歩をキーワード検索対象に追加
+
+#### 指示内容
+
+最初の一歩もキーワード検索に含める。設計書にも追記する。
+
+#### 成果物
+
+- `docs/design.md`
+  - キーワード検索対象をタイトル、説明、最初の一歩として明記。
+  - `GET /api/tasks` の `q` がタイトル、説明、最初の一歩を対象に部分一致検索する仕様を追記。
+- `backend/src/store.ts`
+  - キーワード検索条件に `firstAction` を追加。
+- `backend/src/app.test.ts`
+  - 最初の一歩の文言で検索できることを検証するAPIテストを追加。
+- `docs/screenshots/todo-first-action-keyword-search.png`
+
+#### Codex CLI利用状況
+
+- 開始前: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+- 終了後: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+
+#### やり直し回数
+
+0回
+
+#### 人間レビューが必要だった箇所
+
+- なし。既存キーワード検索対象の拡張として対応した。
+
+#### テスト結果
+
+- `npm run test:backend`: 成功。10 tests passed。
+- `docker compose up -d --build`: 成功。
+- Playwright確認:
+  - キーワード `不足食材` で検索し、最初の一歩に該当文字列を含む `冷蔵庫の中身を確認する` が1件表示されることを確認。
+- `docker compose exec -T backend npm run build -w backend`: 成功。
+- `docker compose exec -T frontend npm run build -w frontend`: 成功。
+
+#### テストで落ちた内容
+
+- なし。
+
+### 2026-07-29: フィルタ対象外親タスク名の表示
+
+#### 指示内容
+
+フィルタして親タスクがフィルタ対象外になっても親タスク名を表示したい。
+
+#### 成果物
+
+- `docs/design.md`
+  - 親タスクがフィルタ対象外でも、子タスクには親タスク名を表示する仕様を追記。
+  - `GET /api/tasks` のレスポンスに表示用 `parentTaskTitle` を含める仕様を追記。
+- `backend/src/store.ts`
+  - `getParentTaskTitle` を追加。
+- `backend/src/app.ts`
+  - タスク一覧・詳細レスポンスに `parentTaskTitle` を追加。
+- `backend/src/app.test.ts`
+  - 親タスクが検索結果に含まれない子タスクでも `parentTaskTitle` が返ることを検証するテストを追加。
+- `frontend/src/App.tsx`
+  - `parentTaskTitle` を受け取り、フィルタ結果内に親タスクがない場合も親タスク名を表示するように変更。
+- `docs/screenshots/todo-filtered-child-parent-name.png`
+
+#### Codex CLI利用状況
+
+- 開始前: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+- 終了後: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+
+#### やり直し回数
+
+0回
+
+#### 人間レビューが必要だった箇所
+
+- なし。前回のフィルタ時親子表示修正を、ユーザー希望に合わせて親タスク名を表示する形へ調整した。
+
+#### テスト結果
+
+- `npm run test:backend`: 成功。9 tests passed。
+- `npm run test:frontend`: 成功。6 tests passed。
+- `docker compose up -d --build`: 成功。
+- Playwright確認:
+  - キーワード検索 `冷蔵庫` で親タスクが対象外、子タスクのみ1件の状態を確認。
+  - ラベルが `子タスク / 親: 買い物リストを作る` と表示されることを確認。
+  - 詳細メタの親タスク欄にも `買い物リストを作る` が表示されることを確認。
+- `docker compose exec -T frontend npm run build -w frontend`: 成功。
+- `docker compose exec -T backend npm run build -w backend`: 成功。
+
+#### テストで落ちた内容
+
+- なし。
+
+### 2026-07-29: フィルタ時の子タスクラベル修正
+
+#### 指示内容
+
+フィルタで絞った結果、親タスクが対象外で子タスクのみのTODOの場合、子タスクに親タスクのラベルが表示されている問題を修正する。
+
+#### 成果物
+
+- `docs/design.md`
+  - 親タスクがフィルタ対象外で子タスクのみが表示される場合も、子タスクとして表示する仕様を追記。
+- `frontend/src/App.tsx`
+  - `buildTaskHierarchy` を修正し、親がフィルタ結果に含まれない子タスクをdepth 1として扱うように変更。
+  - 親タスク名が現在のフィルタ結果にない場合、親名を `フィルタ対象外` と表示するように変更。
+- `frontend/src/App.test.tsx`
+  - 親がフィルタ結果にない子タスクが子タスクとして扱われることを検証するテストを追加。
+- `docs/screenshots/todo-filtered-child-label.png`
+
+#### Codex CLI利用状況
+
+- 開始前: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+- 終了後: 厳密なトークン数は取得できなかった。
+  理由: 実行環境からCodex CLIの /status を直接確認できないため。
+
+#### やり直し回数
+
+0回
+
+#### 人間レビューが必要だった箇所
+
+- なし。既存の親子表示ルールの不具合修正として対応した。
+
+#### テスト結果
+
+- `npm run test:frontend`: 成功。6 tests passed。
+- `npm run test:backend`: 成功。8 tests passed。
+- `docker compose up -d --build`: 成功。
+- Playwright確認:
+  - キーワード検索 `冷蔵庫` で親タスクが対象外、子タスクのみ1件の状態を確認。
+  - 対象タスクのラベルが `子タスク / 親: フィルタ対象外` と表示されることを確認。
+- `docker compose exec -T frontend npm run build -w frontend`: 成功。
+- `docker compose exec -T backend npm run build -w backend`: 成功。
+
+#### テストで落ちた内容
+
+- なし。

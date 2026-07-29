@@ -5,6 +5,7 @@ type TaskListQuery = {
   q?: string;
   categoryId?: string;
   status?: string;
+  isToday?: string;
   sort?: string;
 };
 
@@ -61,7 +62,8 @@ export class TodoStore {
       tasks = tasks.filter(
         (task) =>
           task.title.toLowerCase().includes(keyword) ||
-          (task.description ?? "").toLowerCase().includes(keyword),
+          (task.description ?? "").toLowerCase().includes(keyword) ||
+          (task.firstAction ?? "").toLowerCase().includes(keyword),
       );
     }
 
@@ -71,6 +73,10 @@ export class TodoStore {
 
     if (query.status && statuses.includes(query.status as TaskStatus)) {
       tasks = tasks.filter((task) => task.status === query.status);
+    }
+
+    if (query.isToday === "true") {
+      tasks = tasks.filter((task) => task.isToday);
     }
 
     return this.sortTasks(tasks, query.sort);
@@ -229,6 +235,11 @@ export class TodoStore {
 
   getProgress(taskId: string) {
     return this.getTask(taskId).progress;
+  }
+
+  getParentTaskTitle(taskId: string) {
+    const parentTaskId = this.getTask(taskId).parentTaskId;
+    return parentTaskId ? this.tasks.get(parentTaskId)?.title : undefined;
   }
 
   private normalizeTaskInput(input: TaskInput, current?: Task) {
